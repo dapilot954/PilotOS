@@ -71,6 +71,10 @@ namespace PilotOS.System.ConsoleCommands
                 {
                     Gui.run();
                 }
+                else if (Purge.aliases.Contains(words[0]) == true)
+                {
+                    Purge.run(words);
+                }
                 else
                 {
                     WriteMessage.WriteError("error, no command found");

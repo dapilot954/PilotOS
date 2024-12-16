@@ -7,6 +7,7 @@ using PilotOS.System.Utils;
 using PilotOS.System.ConsoleCommands;
 using PilotOS.Graphics;
 using Cosmos.Core.Memory;
+using System.Security.Cryptography.X509Certificates;
 
 namespace PilotOS
 {
@@ -33,6 +34,7 @@ namespace PilotOS
 
         protected override void Run()
         {
+            
             if (RunGUI == false)
             {
                 Console.WriteLine();
@@ -43,8 +45,8 @@ namespace PilotOS
             else
             {
                 GUI.Update();
-            }
 
+            }
             if (lastHeapCollect >= 20)
             {
                 Heap.Collect();
@@ -54,7 +56,8 @@ namespace PilotOS
             {
                 lastHeapCollect++;
             }
-            
+
+
         }
     }
 }
