@@ -25,10 +25,12 @@ namespace PilotOS.Graphics
         public static bool Clicked;
         public static Process CurrentProcess;
         public static int MX, MY;
-        static int oldX, oldY;
+        static int oldX, oldY, oldWRS, oldHRS, OldXRS, OldYRS;
         static int CX, CY;
         static int ClickUpdate;
         public static PCScreenFont FontDefault = PCScreenFont.Default;
+        public static bool moving, resizing;
+        public static int resizeX, resizeY;
         public static void Update()
         {
             MX = (int)MouseManager.X;
@@ -36,7 +38,9 @@ namespace PilotOS.Graphics
             ProcessManager.Update();
             MainCanvas.DrawImage(Wallpaper, 0, 0);
             MainCanvas.DrawFilledCircle(Color.Red, 1890, 30, 20);
+
             Move();
+            Resize();
             PowerButton();
             ProcessManager.Update();
             MainCanvas.DrawImageAlpha(Cursor, (int)MouseManager.X, (int)MouseManager.Y);
@@ -65,11 +69,16 @@ namespace PilotOS.Graphics
 
         public static void Move()
         {
+            
 
             if (CurrentProcess != null)
             {
-                CurrentProcess.WindowData.WinPos.X = (int)MouseManager.X - oldX;
-                CurrentProcess.WindowData.WinPos.Y = (int)MouseManager.Y - oldY;
+                if (moving == true)
+                {
+
+                    CurrentProcess.WindowData.WinPos.X = (int)MouseManager.X - oldX;
+                    CurrentProcess.WindowData.WinPos.Y = (int)MouseManager.Y - oldY;
+                }
 
             }
             else if (MouseManager.MouseState == MouseState.Left)
@@ -93,6 +102,8 @@ namespace PilotOS.Graphics
                                     CurrentProcess = proc;
                                     oldX = MX - proc.WindowData.WinPos.X;
                                     oldY = MY - proc.WindowData.WinPos.Y;
+                                    resizing = false;
+                                    moving = true;
 
 
                                 }
@@ -105,6 +116,61 @@ namespace PilotOS.Graphics
                 }
 
             }
+        }
+
+        public static void Resize()
+        {
+            if (CurrentProcess != null)
+            {
+                if (resizing == true)
+                {
+                    
+                    resizeX = (int)MouseManager.X - (OldXRS + oldWRS);
+                    resizeY = (int)MouseManager.Y - (OldYRS + oldHRS);
+                    CurrentProcess.WindowData.WinPos.Width = oldWRS + resizeX;
+                    CurrentProcess.WindowData.WinPos.Height = oldHRS + resizeY;
+                }
+            }
+            else if (MouseManager.MouseState == MouseState.Left)
+            {
+                foreach (var proc in ProcessManager.ProcessList)
+                {
+                    if (!proc.WindowData.MoveAble)
+                    {
+                        continue;
+                    }
+                    if (MX > proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width - 30 && MX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
+                    {
+                        if (MY > proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y - 30 && MY < proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y)
+                        {
+                            if (CX > proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width - 30 && CX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
+                            {
+                                if (CY > proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y - 30 && CY < proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y)
+                                {
+
+
+                                    CurrentProcess = proc;
+
+                                    OldXRS = proc.WindowData.WinPos.X ;
+                                    OldYRS = proc.WindowData.WinPos.Y ;
+
+                                    oldWRS = proc.WindowData.WinPos.Width;
+                                    oldHRS = proc.WindowData.WinPos.Height;
+                                    resizing = true;
+                                    moving = false;
+                                    
+
+                                }
+                            }
+
+
+
+                        }
+                    }
+                }
+
+            }
+
         }
         public static void StartGUI()
         {
