@@ -38,12 +38,19 @@ namespace PilotOS.Graphics
             ProcessManager.Update();
             MainCanvas.DrawImage(Wallpaper, 0, 0);
             MainCanvas.DrawFilledCircle(Color.Red, 1890, 30, 20);
-
+            
             Move();
             Resize();
             PowerButton();
+            Selector();
             ProcessManager.Update();
             MainCanvas.DrawImageAlpha(Cursor, (int)MouseManager.X, (int)MouseManager.Y);
+            if (CurrentProcess != null )
+            {
+                ProcessManager.ProcessList.Remove(CurrentProcess);
+                ProcessManager.ProcessList.Add(CurrentProcess);
+            }
+            
 
             if (MouseManager.MouseState == MouseState.Left)
             {
@@ -60,10 +67,25 @@ namespace PilotOS.Graphics
                 Clicked = false;
                 CurrentProcess = null;
                 ClickUpdate = 0;
+
                 
             }
             MainCanvas.Display();
             
+        }
+        public static void Selector()
+        {
+            foreach (var proc in ProcessManager.ProcessList)
+            {
+                if (proc == ProcessManager.ProcessList[ProcessManager.ProcessList.Count - 1])
+                {
+                    proc.WindowData.selected = true;
+                }
+                else
+                {
+                    proc.WindowData.selected = false;
+                }
+            }
         }
         
 
@@ -75,9 +97,11 @@ namespace PilotOS.Graphics
             {
                 if (moving == true)
                 {
+                   
 
                     CurrentProcess.WindowData.WinPos.X = (int)MouseManager.X - oldX;
                     CurrentProcess.WindowData.WinPos.Y = (int)MouseManager.Y - oldY;
+
                 }
 
             }
@@ -88,6 +112,10 @@ namespace PilotOS.Graphics
                     if (!proc.WindowData.MoveAble)
                     {
                         continue;
+                    }
+                    if (proc.WindowData.selected)
+                    {
+                        proc.WindowData.selected = false;
                     }
                     if (MX > proc.WindowData.WinPos.X && MX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
                     {
@@ -104,9 +132,11 @@ namespace PilotOS.Graphics
                                     oldY = MY - proc.WindowData.WinPos.Y;
                                     resizing = false;
                                     moving = true;
+                                    
 
 
                                 }
+
                             }
 
 
@@ -117,6 +147,11 @@ namespace PilotOS.Graphics
 
             }
         }
+        
+
+        // Define minimum size constants
+        const int MIN_WIDTH = 200;  // Minimum allowed width
+        const int MIN_HEIGHT = 200; // Minimum allowed height
 
         public static void Resize()
         {
@@ -124,11 +159,17 @@ namespace PilotOS.Graphics
             {
                 if (resizing == true)
                 {
-                    
+                    // Calculate new size based on mouse movement
                     resizeX = (int)MouseManager.X - (OldXRS + oldWRS);
                     resizeY = (int)MouseManager.Y - (OldYRS + oldHRS);
-                    CurrentProcess.WindowData.WinPos.Width = oldWRS + resizeX;
-                    CurrentProcess.WindowData.WinPos.Height = oldHRS + resizeY;
+
+                    // Apply minimum size constraints
+                    int newWidth = Math.Max(oldWRS + resizeX, MIN_WIDTH);
+                    int newHeight = Math.Max(oldHRS + resizeY, MIN_HEIGHT);
+
+                    // Set new dimensions
+                    CurrentProcess.WindowData.WinPos.Width = newWidth;
+                    CurrentProcess.WindowData.WinPos.Height = newHeight;
                 }
             }
             else if (MouseManager.MouseState == MouseState.Left)
@@ -139,38 +180,36 @@ namespace PilotOS.Graphics
                     {
                         continue;
                     }
-                    if (MX > proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width - 30 && MX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
+
+                    if (MX > proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width - 30 &&
+                        MX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
                     {
-                        if (MY > proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y - 30 && MY < proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y)
+                        if (MY > proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y - 30 &&
+                            MY < proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y)
                         {
-                            if (CX > proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width - 30 && CX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
+                            if (CX > proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width - 30 &&
+                                CX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
                             {
-                                if (CY > proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y - 30 && CY < proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y)
+                                if (CY > proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y - 30 &&
+                                    CY < proc.WindowData.WinPos.Height + proc.WindowData.WinPos.Y)
                                 {
-
-
+                                    // Start resizing
                                     CurrentProcess = proc;
 
-                                    OldXRS = proc.WindowData.WinPos.X ;
-                                    OldYRS = proc.WindowData.WinPos.Y ;
+                                    OldXRS = proc.WindowData.WinPos.X;
+                                    OldYRS = proc.WindowData.WinPos.Y;
 
                                     oldWRS = proc.WindowData.WinPos.Width;
                                     oldHRS = proc.WindowData.WinPos.Height;
                                     resizing = true;
                                     moving = false;
-                                    
-
                                 }
                             }
-
-
-
                         }
                     }
+                    
                 }
-
             }
-
         }
         public static void StartGUI()
         {
@@ -179,7 +218,9 @@ namespace PilotOS.Graphics
             MouseManager.ScreenHeight = (uint)ScreenSizeY;
             MouseManager.X = (uint)ScreenSizeX/2;
             MouseManager.Y = (uint)ScreenSizeY/2;
-            ProcessManager.start(new MessageBox { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 350, 200)}, Name = "Window1" });
+
+            ProcessManager.start(new FileExplorer { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "File Explorer" });
+            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700)}, Name = "Terminal" });
 
         }
 

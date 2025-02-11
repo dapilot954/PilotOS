@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cosmos.System.Graphics;
+using PilotOS.Apps;
 
 namespace PilotOS.System
 {
@@ -15,6 +16,7 @@ namespace PilotOS.System
             Kernel.RunGUI = true;
             GUI.Wallpaper = new Bitmap(Resources.Files.PilotOSBackroundRaw);
             GUI.Cursor = new Bitmap(Resources.Files.PilotOSCursorRaw);
+            FileExplorer.Folder = new Bitmap(Resources.Files.PilotOSFolderRaw);
             GUI.StartGUI();
         }
     }

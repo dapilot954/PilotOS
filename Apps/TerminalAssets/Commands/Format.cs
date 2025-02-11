@@ -1,5 +1,4 @@
-﻿using PilotOS.Apps;
-using PilotOS.System.Utils;
+﻿using PilotOS.System.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PilotOS.System.ConsoleCommands.Commands
+namespace PilotOS.Apps.TerminalAssets.Commands
 {
     internal class Format
     {

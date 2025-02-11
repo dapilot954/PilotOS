@@ -13,10 +13,11 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 using Cosmos.System;
 using Cosmos.System.Keyboard;
+using PilotOS.Apps.TerminalAssets;
 
 namespace PilotOS.Apps
 {
-    public class MessageBox : Process
+    public class Terminal : Process
     {
         public static List<string> WrapStrings(List<string> texts, int maxChars)
         {
@@ -42,10 +43,10 @@ namespace PilotOS.Apps
                 }
 
                 // Add the last line if there's remaining text
-                if (!string.IsNullOrWhiteSpace(currentLine))
-                {
+                //if (!string.IsNullOrWhiteSpace(currentLine))
+              //  {
                     wrappedLines.Add(currentLine.Trim());
-                }
+                //}
             }
 
             return wrappedLines;
@@ -73,6 +74,10 @@ namespace PilotOS.Apps
         {
             lines_perm.Add(text);
         }
+        public static void clear()
+        {
+            lines_perm.Clear();
+        }
 
         public static string input = "";
         public static bool execute = false;
@@ -83,13 +88,13 @@ namespace PilotOS.Apps
             int SizeX = WindowData.WinPos.Width;
             int SizeY = WindowData.WinPos.Height;
             string commandline = Kernel.Path + input;
-            
-            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, x, y + Window.TopSize, SizeX, SizeY - Window.TopSize);
             Window.DrawTop(this);
+            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, x, y + Window.TopSize, SizeX, SizeY - Window.TopSize);
+
             lines.Clear();
+
+            print("PilotOS Terminal version 0.1");
             
-            print("i am testing the command line input module");
-            print("this is really cool");
             if (WindowData.selected == true)
             {
                 if (Cosmos.System.KeyboardManager.TryReadKey(out var key))
@@ -104,7 +109,7 @@ namespace PilotOS.Apps
                     else if (key.Key == ConsoleKeyEx.Enter)
                     {
                         execute = true;
-                        
+
                     }
                     else
                     {
@@ -122,9 +127,12 @@ namespace PilotOS.Apps
 
             if (execute)
             {
-                print_perm(input);
+                print_perm(Kernel.Path + input);
+                TerminalCommandRunner.commandrun(input);
+                print_perm("");
                 input = "";
                 execute = false;
+                
             }
 
 
@@ -167,35 +175,35 @@ namespace PilotOS.Apps
 
             }
 
-            }
-            static void MoveLastLines(List<string> list1, List<string> list2, int x)
-            {
-                // Validate input
-                if (x <= 0)
-                {
-                    return;
-                }
-
-                if (list1 == null || list2 == null)
-                {
-                    return;
-                }
-
-                if (x > list1.Count)
-                {
-                    x = list1.Count; // Move all lines if x exceeds list size
-                }
-
-                // Get the last x lines
-                List<string> linesToMove = list1.GetRange(list1.Count - x, x);
-
-                // Add to List2
-                list2.AddRange(linesToMove);
-
-                // Remove from List1
-                list1.RemoveRange(list1.Count - x, x);
-            }
-
-
         }
-    } 
+        static void MoveLastLines(List<string> list1, List<string> list2, int x)
+        {
+            // Validate input
+            if (x <= 0)
+            {
+                return;
+            }
+
+            if (list1 == null || list2 == null)
+            {
+                return;
+            }
+
+            if (x > list1.Count)
+            {
+                x = list1.Count; // Move all lines if x exceeds list size
+            }
+
+            // Get the last x lines
+            List<string> linesToMove = list1.GetRange(list1.Count - x, x);
+
+            // Add to List2
+            list2.AddRange(linesToMove);
+
+            // Remove from List1
+            list1.RemoveRange(list1.Count - x, x);
+        }
+
+
+    }
+}

@@ -1,12 +1,12 @@
 ﻿using PilotOS.System.Utils;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
-namespace PilotOS.System.ConsoleCommands.Commands
+namespace PilotOS.Apps.TerminalAssets.Commands
 {
     internal class Add
     {
@@ -29,18 +29,18 @@ namespace PilotOS.System.ConsoleCommands.Commands
                         if (words[a].Contains(">"))
                         {
                             valid = true;
-                            break;
-
+                            break ;
+                            
                         }
-                        else { valid = false; }
+                        else { valid = false;}
                         a++;
                     }
                 }
-                int b = words.Length - 1;
+                int b = words.Length-1;
                 if (words[b].EndsWith(">"))
                 {
                     valid = false;
-
+                    
                 }
                 if (valid)
                 {
@@ -50,6 +50,9 @@ namespace PilotOS.System.ConsoleCommands.Commands
                         wholestring += words[i] + " ";
 
                     }
+                    
+                    
+                    
                     int pathIndex = wholestring.LastIndexOf('>');
                     string text = wholestring.Substring(0, pathIndex);
                     string path = wholestring.Substring(pathIndex + 1);
@@ -62,19 +65,25 @@ namespace PilotOS.System.ConsoleCommands.Commands
                         path = path.Substring(0, path.Length - 1);
                     }
                     text = text.Remove(0, 4);
+
+
                     File.WriteAllText(path, text);
-                    WriteMessage.WriteOK("completed succesfully");
+                    Terminal.print_perm("completed succesfully");
+
+                    
+
+
                 }
                 else
                 {
-                    WriteMessage.WriteError("invalid syntax");
+                    Terminal.print_perm("invalid syntax");
                 }
                 
 
             }
             else
             {
-                WriteMessage.WriteError("invalid syntax!");
+                Terminal.print_perm("invalid syntax!");
             }
         }
     }
