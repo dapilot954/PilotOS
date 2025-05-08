@@ -21,8 +21,8 @@ namespace PilotOS.System.ConsoleCommands.Commands
             Kernel.fs.Disks[0].Clear();
             Kernel.fs.Disks[0].CreatePartition((int)(Kernel.fs.Disks[0].Size / (1024 * 1024)));
             Kernel.fs.Disks[0].FormatPartition(0, "FAT32", true);
-            Terminal.print_perm("Success");
-            Terminal.print_perm("DoorsOS will reboot in 3 seconds");
+            Console.WriteLine("Success");
+            Console.WriteLine("DoorsOS will reboot in 3 seconds");
             Thread.Sleep(3000);
             Cosmos.System.Power.Reboot();
         }

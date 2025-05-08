@@ -9,10 +9,10 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Storageinfo
     {
         public static string[] aliases = { "storageinfo", "storage" };
-        public static void run()
+        public static void run(Terminal terminal)
         {
-            float free = Kernel.fs.GetAvailableFreeSpace(Kernel.Path);
-            float total = Kernel.fs.GetTotalSize(Kernel.Path);
+            float free = Kernel.fs.GetAvailableFreeSpace(terminal.Path);
+            float total = Kernel.fs.GetTotalSize(terminal.Path);
             float used = total - free;
             float percentage_used = used / total * 100;
             float percentage_free = free / total * 100;
@@ -64,9 +64,9 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                     }
                 }
             }
-            Terminal.print_perm("used space on drive = " + used + " " + data_order3 + $" ({percentage_used}%)");
-            Terminal.print_perm("Free space on drive = " + free + " " + data_order1 + $" ({percentage_free}%)");
-            Terminal.print_perm("total size of drive = " + total + " " + data_order2);
+            terminal.print_perm("used space on drive = " + used + " " + data_order3 + $" ({percentage_used}%)");
+            terminal.print_perm("Free space on drive = " + free + " " + data_order1 + $" ({percentage_free}%)");
+            terminal.print_perm("total size of drive = " + total + " " + data_order2);
         }
     }
 }

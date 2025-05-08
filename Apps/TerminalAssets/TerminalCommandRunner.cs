@@ -12,79 +12,79 @@ namespace PilotOS.Apps.TerminalAssets
 {
     internal class TerminalCommandRunner
     {
-        public static void commandrun(string command)
+        public static void commandrun(string command, Terminal terminal)
         {
             string[] words = command.Split(" ");
             if (words.Length > 0)
             {
                 if (Echo.aliases.Contains(words[0]) == true)
                 {
-                    Echo.run(command);
+                    Echo.run(command, terminal);
                 }
                 else if (Ls.aliases.Contains(words[0]) == true)
                 {
-                    Ls.run();
+                    Ls.run(terminal);
                 }
                 else if (Add.aliases.Contains(words[0]) == true)
                 {
-                    Add.run(words);
+                    Add.run(words, terminal);
                 }
                 else if (Cat.aliases.Contains(words[0]) == true)
                 {
-                    Cat.run(words);
+                    Cat.run(words, terminal);
                 }
                 else if (Shutdown.aliases.Contains(words[0]) == true)
                 {
-                    Shutdown.run();
+                    Shutdown.run(terminal);
                 }
                 else if (Reboot.aliases.Contains(words[0]) == true)
                 {
-                    Reboot.run();
+                    Reboot.run(terminal);
                 }
                 else if (Rm.aliases.Contains(words[0]) == true)
                 {
-                    Rm.run(words);
+                    Rm.run(words, terminal);
                 }
                 else if (Cd.aliases.Contains(words[0]) == true)
                 {
-                    Cd.run(words);
+                    Cd.run(words, terminal);
                 }
                 else if (Mkdir.aliases.Contains(words[0]) == true)
                 {
-                    Mkdir.run(words);
+                    Mkdir.run(words, terminal);
                 }
                 else if (Storageinfo.aliases.Contains(words[0]) == true)
                 {
-                    Storageinfo.run();
+                    Storageinfo.run(terminal);
                 }
                 else if (Format.aliases.Contains(words[0]) == true)
                 {
-                    Format.run();
+                    Format.run(terminal);
                 }
                 else if (Clear.aliases.Contains(words[0]) == true)
                 {
-                    Clear.run();
+                    Clear.run(terminal);
                 }
                 else if (Purge.aliases.Contains(words[0]) == true)
                 {
-                    Purge.run(words);
+                    Purge.run(words, terminal);
                 }
                 else if (Rmdir.aliases.Contains(words[0]) == true)
                 {
-                    Rmdir.run(words);
+                    Rmdir.run(words, terminal);
                 }
                 else if (Help.aliases.Contains(words[0]) == true)
                 {
-                    Help.run(words);
+                    Help.run(words, terminal);
                 }
                 else
                 {
-                    Terminal.print_perm("error, no command found");
+                    terminal.print_perm("error, no command found");
                 }
             }
             else
             {
-                Terminal.print_perm("error, no command found");
+                terminal.print_perm("error, no command found");
             }
         }
     }

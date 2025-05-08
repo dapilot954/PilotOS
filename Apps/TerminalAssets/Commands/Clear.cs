@@ -10,9 +10,9 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     {
         
         public static string[] aliases = { "clear", "cls" };
-        public static void run()
+        public static void run(Terminal terminal)
         {
-            Terminal.clear();
+            terminal.clear();
         }
         
     }

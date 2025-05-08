@@ -11,7 +11,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Add
     {
         public static string[] aliases = { "add", "write" };
-        public static void run(string[] words)
+        public static void run(string[] words, Terminal terminal)
         {
             if (words.Length > 1)
             {
@@ -58,7 +58,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                     string path = wholestring.Substring(pathIndex + 1);
                     if (!path.StartsWith(@"0:\"))
                     {
-                        path = Kernel.Path + path;
+                        path = terminal.Path + path;
                     }
                     if (path.EndsWith(' '))
                     {
@@ -68,7 +68,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
 
 
                     File.WriteAllText(path, text);
-                    Terminal.print_perm("completed succesfully");
+                    terminal.print_perm("completed succesfully");
 
                     
 
@@ -76,14 +76,14 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                 }
                 else
                 {
-                    Terminal.print_perm("invalid syntax");
+                    terminal.print_perm("invalid syntax");
                 }
                 
 
             }
             else
             {
-                Terminal.print_perm("invalid syntax!");
+                terminal.print_perm("invalid syntax!");
             }
         }
     }

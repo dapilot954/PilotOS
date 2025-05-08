@@ -11,16 +11,16 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Cd
     {
         public static string[] aliases = { "cd" };
-        public static void run(string[] words)
+        public static void run(string[] words, Terminal terminal)
         {
             if (words.Length > 1)
             {
                 if (words[1] == "..")
                 {
-                    if (Kernel.Path != @"0:\")
+                    if (terminal.Path != @"0:\")
                     {
-                        string tempPath = Kernel.Path.Substring(0, Kernel.Path.Length - 1);
-                        Kernel.Path = tempPath.Substring(0, tempPath.LastIndexOf(@"\"));
+                        string tempPath = terminal.Path.Substring(0, terminal.Path.Length - 1);
+                        terminal.Path = tempPath.Substring(0, tempPath.LastIndexOf(@"\"));
                         return;
                     }
                     else
@@ -31,7 +31,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                 string path = words[1];
 
                 if (!path.Contains(@"\"))
-                    path = Kernel.Path + path + @"\";
+                    path = terminal.Path + path + @"\";
                 if (path.EndsWith(' '))
                 {
                     path = path.Substring(0, path.Length - 1);
@@ -40,16 +40,16 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                     path += @"\";
                 if (Directory.Exists(path))
                 {
-                    Kernel.Path = path;
+                    terminal.Path = path;
                 }
                 else
                 {
-                    Terminal.print_perm($"Directory {path} not found or doesnt exist!");
+                    terminal.print_perm($"Directory {path} not found or doesnt exist!");
                 }
 
             }
             else
-                Kernel.Path = @"0:\";
+                terminal.Path = @"0:\";
         }
     }
 }

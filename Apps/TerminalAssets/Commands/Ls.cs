@@ -10,19 +10,19 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Ls
     {
         public static string[] aliases = { "ls", "list" };
-        public static void run()
+        public static void run(Terminal terminal)
         {
-            var Directories = Directory.GetDirectories(Kernel.Path);
-            var Files = Directory.GetFiles(Kernel.Path);
-            Terminal.print_perm("Directories (" + Directories.Length + ")");
+            var Directories = Directory.GetDirectories(terminal.Path);
+            var Files = Directory.GetFiles(terminal.Path);
+            terminal.print_perm("Directories (" + Directories.Length + ")");
             for (int i = 0; i < Directories.Length; i++)
             {
-                Terminal.print_perm(Directories[i]);
+                terminal.print_perm(Directories[i]);
             }
-            Terminal.print_perm("Files (" + Files.Length + ")");
+            terminal.print_perm("Files (" + Files.Length + ")");
             for (int i = 0; i < Files.Length; i++)
             {
-                Terminal.print_perm(Files[i]);
+                terminal.print_perm(Files[i]);
             }
         }
     }

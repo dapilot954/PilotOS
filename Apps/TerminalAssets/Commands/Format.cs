@@ -11,7 +11,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Format
     {
         public static string[] aliases = { "format" };
-        public static void run()
+        public static void run(Terminal terminal)
         {
             if (Kernel.fs.Disks[0].Partitions.Count > 0)
             {
@@ -20,8 +20,8 @@ namespace PilotOS.Apps.TerminalAssets.Commands
             Kernel.fs.Disks[0].Clear();
             Kernel.fs.Disks[0].CreatePartition((int)(Kernel.fs.Disks[0].Size / (1024 * 1024)));
             Kernel.fs.Disks[0].FormatPartition(0, "FAT32", true);
-            Terminal.print_perm("Success");
-            Terminal.print_perm("DoorsOS will reboot in 3 seconds");
+            terminal.print_perm("Success");
+            terminal.print_perm("DoorsOS will reboot in 3 seconds");
             Thread.Sleep(3000);
             Cosmos.System.Power.Reboot();
         }

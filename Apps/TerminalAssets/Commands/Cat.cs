@@ -11,7 +11,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Cat
     {
         public static string[] aliases = { "cat", "read" };
-        public static void run(string[] words)
+        public static void run(string[] words, Terminal terminal)
         {
             if (words.Length > 1)
             {
@@ -19,7 +19,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
 
                 if (!path.StartsWith(@"0:\"))
                 {
-                    path = Kernel.Path + path;
+                    path = terminal.Path + path;
                 }
                 if (path.EndsWith(' '))
                 {
@@ -28,18 +28,18 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                 if (File.Exists(path))
                 {
                     string text = File.ReadAllText(path);
-                    Terminal.print_perm(text);
+                    terminal.print_perm(text);
                 }
                 else
                 {
-                    Terminal.print_perm($"the file {path} is not found");
+                    terminal.print_perm($"the file {path} is not found");
                 }
 
 
             }
             else
             {
-                Terminal.print_perm("invalid syntax!");
+                terminal.print_perm("invalid syntax!");
             }
         }
     }

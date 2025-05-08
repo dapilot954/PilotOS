@@ -11,7 +11,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Rmdir
     {
         public static string[] aliases = { "rmdir", "removedir" };
-        public static void run(string[] words)
+        public static void run(string[] words, Terminal terminal)
         {
             if (words.Length > 1)
             {
@@ -19,7 +19,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
 
                 if (!path.StartsWith(@"0:\"))
                 {
-                    path = Kernel.Path + path;
+                    path = terminal.Path + path;
                 }
                 if (path.EndsWith(' '))
                 {
@@ -30,22 +30,22 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                     string[] path_files = Directory.GetFiles(path);
                     if (path_files.Count() > 0)
                     {
-                        Terminal.print_perm("This directory cannot be deleted because it has files inside\nplease remove all files before deleting");
+                        terminal.print_perm("This directory cannot be deleted because it has files inside\nplease remove all files before deleting");
                     }
                     else
                     {
                         Directory.Delete(path);
-                        Terminal.print_perm($"deleted directory ({path}) successfully");
+                        terminal.print_perm($"deleted directory ({path}) successfully");
                     }
                 }
                 else
                 {
-                    Terminal.print_perm($"the directory ({path}) is not found");
+                    terminal.print_perm($"the directory ({path}) is not found");
                 }
             }
             else
             {
-                Terminal.print_perm("invalid syntax!");
+                terminal.print_perm("invalid syntax!");
             }
         }
     }

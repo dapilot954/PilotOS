@@ -11,7 +11,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Purge
     {
         public static string[] aliases = { "purge" };
-        public static void run(string[] words)
+        public static void run(string[] words, Terminal terminal)
         {
             if (words.Length > 1)
             {
@@ -19,7 +19,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
 
                 if (!path.StartsWith(@"0:\"))
                 {
-                    path = Kernel.Path + path;
+                    path = terminal.Path + path;
                 }
                 if (path.EndsWith(' '))
                 {
@@ -28,24 +28,24 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                 if (Directory.Exists(path))
                 {
 
-                    PurgeFiles(path);
-                    PurgeDirs(path);
-                    Terminal.print_perm("Purged (" + path + ") successfully");
+                    PurgeFiles(path, terminal);
+                    PurgeDirs(path, terminal);
+                    terminal.print_perm("Purged (" + path + ") successfully");
 
                 }
                 else
                 {
-                    Terminal.print_perm($"the directory ({path}) is not found or does not exist");
+                    terminal.print_perm($"the directory ({path}) is not found or does not exist");
                 }
             }
             else
             {
-                 Terminal.print_perm("invalid syntax!");
+                 terminal.print_perm("invalid syntax!");
             }
         }
 
 
-        public static void PurgeFiles(string path)
+        public static void PurgeFiles(string path, Terminal terminal)
         {
             string[] files = Directory.GetFiles(path);
             string[] directories = Directory.GetDirectories(path);
@@ -62,7 +62,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                     else
                     {
                         File.Delete(path + "\\" + files[i]);
-                        Terminal.print_perm($"deleted file ({path + "\\" + files[i]}) successfully");
+                        terminal.print_perm($"deleted file ({path + "\\" + files[i]}) successfully");
                         i++;
 
                     }
@@ -80,8 +80,8 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                     }
                     else
                     {
-                        PurgeFiles(path + "\\" + directories[i]);
-                        PurgeDirs(path + "\\" + directories[i]);
+                        PurgeFiles(path + "\\" + directories[i], terminal);
+                        PurgeDirs(path + "\\" + directories[i], terminal);
                         i++;
                     }
 
@@ -93,7 +93,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
 
         }
 
-        public static void PurgeDirs(string path)
+        public static void PurgeDirs(string path, Terminal terminal)
         {
             string[] directories = Directory.GetDirectories(path);
             if (directories.Length > 0)
@@ -111,12 +111,12 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                         if (x.Length == 0)
                         {
                             Directory.Delete(path + "\\" + directories[i]);
-                            Terminal.print_perm($"deleted directory ({path + "\\" + directories[i]}) successfully");
+                            terminal.print_perm($"deleted directory ({path + "\\" + directories[i]}) successfully");
                             i++;
                         }
                         else
                         {
-                            PurgeDirs(path + "\\" + directories[i]);
+                            PurgeDirs(path + "\\" + directories[i], terminal);
                             i++;
                         }
 

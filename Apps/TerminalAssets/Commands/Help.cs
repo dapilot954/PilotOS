@@ -9,7 +9,7 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Help
     {
         public static string[] aliases = { "help", "info" };
-        public static void run(string[] words)
+        public static void run(string[] words, Terminal terminal)
         {
             if (words.Length > 1)
             {
@@ -17,22 +17,22 @@ namespace PilotOS.Apps.TerminalAssets.Commands
             }
             else
             {
-                Terminal.print_perm("welcome to the help menu, below is a list of all of the possible commands in this terminal");
-                Terminal.print_perm("1) add");
-                Terminal.print_perm("2) cat");
-                Terminal.print_perm("3) cd");
-                Terminal.print_perm("4) clear");
-                Terminal.print_perm("5) echo");
-                Terminal.print_perm("6) format");
-                Terminal.print_perm("7) help");
-                Terminal.print_perm("8) ls");
-                Terminal.print_perm("9) mkdir");
-                Terminal.print_perm("10) purge");
-                Terminal.print_perm("11) reboot");
-                Terminal.print_perm("12) rm");
-                Terminal.print_perm("13) rmdir");
-                Terminal.print_perm("14) shutdown");
-                Terminal.print_perm("15) storageinfo");
+                terminal.print_perm("welcome to the help menu, below is a list of all of the possible commands in this terminal");
+                terminal.print_perm("1) add");
+                terminal.print_perm("2) cat");
+                terminal.print_perm("3) cd");
+                terminal.print_perm("4) clear");
+                terminal.print_perm("5) echo");
+                terminal.print_perm("6) format");
+                terminal.print_perm("7) help");
+                terminal.print_perm("8) ls");
+                terminal.print_perm("9) mkdir");
+                terminal.print_perm("10) purge");
+                terminal.print_perm("11) reboot");
+                terminal.print_perm("12) rm");
+                terminal.print_perm("13) rmdir");
+                terminal.print_perm("14) shutdown");
+                terminal.print_perm("15) storageinfo");
             }
         }
     }

@@ -10,22 +10,22 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Echo
     {
         public static string[] aliases = { "echo", "test" };
-        public static void run(string text)
+        public static void run(string text, Terminal terminal)
         {
             try
             {
-                Terminal.print_perm(text.Remove(0, 5));
+                terminal.print_perm(text.Remove(0, 5));
             }
             catch (Exception e)
             {
                 if (e.Message == "ArgumentOutOfRange_IndexCount Parameter name: count")
                 {
-                    Terminal.print_perm("This command requires you to add text after calling the command");
+                    terminal.print_perm("This command requires you to add text after calling the command");
                 }
                 else
                 {
-                    Terminal.print_perm("an error occured");
-                    Terminal.print_perm(e.Message);
+                    terminal.print_perm("an error occured");
+                    terminal.print_perm(e.Message);
                 }
 
             }

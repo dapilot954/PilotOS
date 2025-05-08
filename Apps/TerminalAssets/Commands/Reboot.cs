@@ -9,9 +9,9 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Reboot
     {
         public static string[] aliases = { "reboot", "restart" };
-        public static void run()
+        public static void run(Terminal terminal)
         {
-            Terminal.print_perm("Rebooting");
+            terminal.print_perm("Rebooting");
             Cosmos.System.Power.Reboot();
         }
     }

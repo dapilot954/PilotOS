@@ -10,9 +10,9 @@ namespace PilotOS.Apps.TerminalAssets.Commands
     internal class Shutdown
     {
         public static string[] aliases = { "shutdown", "poweroff" };
-        public static void run()
+        public static void run(Terminal terminal)
         {
-            Terminal.print_perm("shutting down");
+            terminal.print_perm("shutting down");
             Cosmos.System.Power.Shutdown();
         }
     }
