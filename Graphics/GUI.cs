@@ -38,19 +38,19 @@ namespace PilotOS.Graphics
             ProcessManager.Update();
             MainCanvas.DrawImage(Wallpaper, 0, 0);
             MainCanvas.DrawFilledCircle(Color.Red, 1890, 30, 20);
-            
+
             Move();
             Resize();
             PowerButton();
             Selector();
             ProcessManager.Update();
             MainCanvas.DrawImageAlpha(Cursor, (int)MouseManager.X, (int)MouseManager.Y);
-            if (CurrentProcess != null )
+            if (CurrentProcess != null)
             {
                 ProcessManager.ProcessList.Remove(CurrentProcess);
                 ProcessManager.ProcessList.Add(CurrentProcess);
             }
-            
+
 
             if (MouseManager.MouseState == MouseState.Left)
             {
@@ -68,10 +68,10 @@ namespace PilotOS.Graphics
                 CurrentProcess = null;
                 ClickUpdate = 0;
 
-                
+
             }
             MainCanvas.Display();
-            
+
         }
         public static void Selector()
         {
@@ -87,17 +87,17 @@ namespace PilotOS.Graphics
                 }
             }
         }
-        
+
 
         public static void Move()
         {
-            
+
 
             if (CurrentProcess != null)
             {
                 if (moving == true)
                 {
-                   
+
 
                     CurrentProcess.WindowData.WinPos.X = (int)MouseManager.X - oldX;
                     CurrentProcess.WindowData.WinPos.Y = (int)MouseManager.Y - oldY;
@@ -119,7 +119,7 @@ namespace PilotOS.Graphics
                     }
                     if (MX > proc.WindowData.WinPos.X && MX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
                     {
-                        if (MY >  proc.WindowData.WinPos.Y && MY < proc.WindowData.WinPos.Y + Window.TopSize)
+                        if (MY > proc.WindowData.WinPos.Y && MY < proc.WindowData.WinPos.Y + Window.TopSize)
                         {
                             if (CX > proc.WindowData.WinPos.X && CX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
                             {
@@ -132,7 +132,7 @@ namespace PilotOS.Graphics
                                     oldY = MY - proc.WindowData.WinPos.Y;
                                     resizing = false;
                                     moving = true;
-                                    
+
 
 
                                 }
@@ -140,14 +140,14 @@ namespace PilotOS.Graphics
                             }
 
 
-                            
+
                         }
                     }
                 }
 
             }
         }
-        
+
 
         // Define minimum size constants
         const int MIN_WIDTH = 200;  // Minimum allowed width
@@ -207,7 +207,7 @@ namespace PilotOS.Graphics
                             }
                         }
                     }
-                    
+
                 }
             }
         }
@@ -216,16 +216,16 @@ namespace PilotOS.Graphics
             MainCanvas = new SVGAIICanvas(new Mode((uint)ScreenSizeX, (uint)ScreenSizeY, ColorDepth.ColorDepth32));
             MouseManager.ScreenWidth = (uint)ScreenSizeX;
             MouseManager.ScreenHeight = (uint)ScreenSizeY;
-            MouseManager.X = (uint)ScreenSizeX/2;
-            MouseManager.Y = (uint)ScreenSizeY/2;
+            MouseManager.X = (uint)ScreenSizeX / 2;
+            MouseManager.Y = (uint)ScreenSizeY / 2;
 
             ProcessManager.start(new FileExplorer { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "File Explorer" });
-            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700)}, Name = "Terminal" });
+            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "Terminal" });
 
         }
 
 
-        
+
         public static void PowerButton()
         {
             if (Clicked == true)
@@ -234,7 +234,7 @@ namespace PilotOS.Graphics
                 {
                     if (CY > 30 - 20 && CY < 30 + 20)
                     {
-                        
+
                         Power.Reboot();
                     }
                 }
