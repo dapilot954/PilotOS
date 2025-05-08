@@ -91,62 +91,57 @@ namespace PilotOS.Graphics
 
         public static void Move()
         {
-
-
-            if (CurrentProcess != null)
+            if (CurrentProcess != null && moving)
             {
-                if (moving == true)
-                {
-
-
-                    CurrentProcess.WindowData.WinPos.X = (int)MouseManager.X - oldX;
-                    CurrentProcess.WindowData.WinPos.Y = (int)MouseManager.Y - oldY;
-
-                }
-
+                CurrentProcess.WindowData.WinPos.X = MX - oldX;
+                CurrentProcess.WindowData.WinPos.Y = MY - oldY;
+                return;
             }
-            else if (MouseManager.MouseState == MouseState.Left)
+
+            if (MouseManager.MouseState == MouseState.Left)
             {
-                foreach (var proc in ProcessManager.ProcessList)
+                for (int i = ProcessManager.ProcessList.Count - 1; i >= 0; i--)
                 {
-                    if (!proc.WindowData.MoveAble)
+                    var proc = ProcessManager.ProcessList[i];
+                    if (!proc.WindowData.MoveAble) continue;
+
+                    var win = proc.WindowData.WinPos;
+
+                    // Check if mouse is inside the top bar area of this process
+                    if (MX >= win.X && MX < win.X + win.Width &&
+                        MY >= win.Y && MY < win.Y + Window.TopSize)
                     {
-                        continue;
-                    }
-                    if (proc.WindowData.selected)
-                    {
-                        proc.WindowData.selected = false;
-                    }
-                    if (MX > proc.WindowData.WinPos.X && MX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
-                    {
-                        if (MY > proc.WindowData.WinPos.Y && MY < proc.WindowData.WinPos.Y + Window.TopSize)
+                        bool covered = false;
+
+                        // Check if the mouse position is covered by any higher (above in z-order) process
+                        for (int j = ProcessManager.ProcessList.Count - 1; j > i; j--)
                         {
-                            if (CX > proc.WindowData.WinPos.X && CX < proc.WindowData.WinPos.X + proc.WindowData.WinPos.Width)
+                            var other = ProcessManager.ProcessList[j];
+                            var otherWin = other.WindowData.WinPos;
+
+                            if (MX >= otherWin.X && MX < otherWin.X + otherWin.Width &&
+                                MY >= otherWin.Y && MY < otherWin.Y + otherWin.Height)
                             {
-                                if (CY > proc.WindowData.WinPos.Y && CY < proc.WindowData.WinPos.Y + Window.TopSize)
-                                {
-
-
-                                    CurrentProcess = proc;
-                                    oldX = MX - proc.WindowData.WinPos.X;
-                                    oldY = MY - proc.WindowData.WinPos.Y;
-                                    resizing = false;
-                                    moving = true;
-
-
-
-                                }
-
+                                covered = true;
+                                break;
                             }
+                        }
 
-
-
+                        if (!covered)
+                        {
+                            CurrentProcess = proc;
+                            oldX = MX - win.X;
+                            oldY = MY - win.Y;
+                            moving = true;
+                            resizing = false;
+                            break;
                         }
                     }
                 }
-
             }
         }
+
+
 
 
         // Define minimum size constants
@@ -220,6 +215,7 @@ namespace PilotOS.Graphics
             MouseManager.Y = (uint)ScreenSizeY / 2;
 
             ProcessManager.start(new FileExplorer { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "File Explorer" });
+            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "testlol" });
             ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "Terminal" });
 
         }
