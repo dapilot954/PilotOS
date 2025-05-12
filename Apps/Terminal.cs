@@ -17,6 +17,16 @@ namespace PilotOS.Apps
         private bool execute = false;
         public string Path = @"0:\";
 
+        public override void Start()
+        {
+            if (WindowData.args != "")
+            {
+                input = WindowData.args;
+                execute = true;
+            }
+            
+            
+        }
         public static List<string> WrapStrings(List<string> texts, int maxChars)
         {
             List<string> wrappedLines = new List<string>();
@@ -81,7 +91,7 @@ namespace PilotOS.Apps
             GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, x, y + Window.TopSize, SizeX, SizeY - Window.TopSize);
 
             lines.Clear();
-            print("PilotOS Terminal version 0.1");
+            print("PilotOS Terminal version 0.2");
 
             if (WindowData.selected)
             {

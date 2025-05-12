@@ -25,5 +25,6 @@ namespace PilotOS.System
         public Rectangle WinPos = new Rectangle { X = 100, Y = 100, Height = 100, Width = 100};
         public bool selected = false;
         public bool MoveAble = true;
+        public string args = "";
     }
 }

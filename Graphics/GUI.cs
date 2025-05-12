@@ -215,8 +215,7 @@ namespace PilotOS.Graphics
             MouseManager.Y = (uint)ScreenSizeY / 2;
 
             ProcessManager.start(new FileExplorer { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "File Explorer" });
-            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "testlol" });
-            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) }, Name = "Terminal" });
+            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700), args = "" }, Name = "Terminal" });
 
         }
 
