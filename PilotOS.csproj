@@ -22,15 +22,15 @@
 
     <ItemGroup>
       <None Remove="Resources\Cursors\cursor1.bmp" />
+      <None Remove="Resources\FileIcons\FileIcon.bmp" />
       <None Remove="Resources\FileIcons\FolderIcon.bmp" />
-      <None Remove="Resources\FileIcons\refresh.bmp" />
       <None Remove="Resources\Wallpapers\image.bmp" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Include="Resources\Cursors\cursor1.bmp" />
+      <EmbeddedResource Include="Resources\FileIcons\FileIcon.bmp" />
       <EmbeddedResource Include="Resources\FileIcons\FolderIcon.bmp" />
-      <EmbeddedResource Include="Resources\FileIcons\refresh.bmp" />
       <EmbeddedResource Include="Resources\Wallpapers\image.bmp" />
     </ItemGroup>
 
