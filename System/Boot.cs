@@ -20,6 +20,7 @@ namespace PilotOS.System
             FileExplorer.FileIcon = new Bitmap(Resources.Files.PilotOSFileRaw);
             FileExplorer.BackIcon = new Bitmap(Resources.Files.PilotOSBackRaw);
             FileExplorer.AddIcon = new Bitmap(Resources.Files .PilotOSAddRaw);
+            FileExplorer.DeleteIcon = new Bitmap(Resources.Files.PilotOSDeleteRaw);
             GUI.StartGUI();
         }
     }

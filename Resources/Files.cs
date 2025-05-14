@@ -15,5 +15,6 @@ namespace PilotOS.Resources
         [ManifestResourceStream(ResourceName = "PilotOS.Resources.FileIcons.FileIcon.bmp")] public static byte[] PilotOSFileRaw;
         [ManifestResourceStream(ResourceName = "PilotOS.Resources.FileIcons.BackIcon.bmp")] public static byte[] PilotOSBackRaw;
         [ManifestResourceStream(ResourceName = "PilotOS.Resources.FileIcons.AddIcon.bmp")] public static byte[] PilotOSAddRaw;
+        [ManifestResourceStream(ResourceName = "PilotOS.Resources.FileIcons.DeleteIcon.bmp")] public static byte[] PilotOSDeleteRaw;
     }
 }

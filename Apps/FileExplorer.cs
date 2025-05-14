@@ -32,6 +32,8 @@ namespace PilotOS.Apps
         public static Bitmap FileIcon;
         public static Bitmap BackIcon;
         public static Bitmap AddIcon;
+        public static Bitmap DeleteIcon;
+
         public string Path = @"0:\";
         public static int scrollOffset = 0;
         private const int itemHeight = 30;
@@ -272,6 +274,10 @@ namespace PilotOS.Apps
                     if (newFileName.Length > 0)
                         newFileName = newFileName.Remove(newFileName.Length - 1);
                 }
+                else if (key.Key == ConsoleKeyEx.Minus)
+                {
+
+                }
                 else if (key.Key == ConsoleKeyEx.Enter)
                 {
                     if (!string.IsNullOrWhiteSpace(newFileName))
@@ -282,16 +288,24 @@ namespace PilotOS.Apps
 
                         try
                         {
-                            File.WriteAllText(newFilePath, "");
+                            if (isFolderCreation)
+                            {
+                                Directory.CreateDirectory(newFilePath);
+                            }
+                            else
+                            {
+                                File.WriteAllText(newFilePath, "");
+                            }
                         }
                         catch { }
-
                     }
 
                     showPopup = false;
                     waitingForInput = false;
                     newFileName = "";
+                    addStage = AddModeStage.None;
                 }
+
                 else
                 {
                     newFileName += key.KeyChar;
