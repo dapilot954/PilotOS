@@ -13,6 +13,17 @@ namespace PilotOS.Apps
 {
     public class FileExplorer : Process
     {
+
+        private enum AddModeStage
+        {
+            None,
+            ChoosingType,
+            Naming
+        }
+
+        private AddModeStage addStage = AddModeStage.None;
+        private bool isFolderCreation = false;
+
         private string selectedItem = null;
         private string lastClickedItem = null;
         private DateTime lastClickTime = DateTime.MinValue;
@@ -104,29 +115,28 @@ namespace PilotOS.Apps
 
             if (WindowData.selected)
             {
-                // Draw Add icon
-
-
                 if (MouseManager.MouseState == MouseState.Left)
                 {
                     int mx = (int)MouseManager.X;
                     int my = (int)MouseManager.Y;
 
-                    if (!mousePreviouslyDown && mx >= addIconX && mx <= addIconX + 26 &&
-                        my >= addIconY && my <= addIconY + 26)
+                    if (!mousePreviouslyDown && mx >= addIconX && mx <= addIconX + 26 && my >= addIconY && my <= addIconY + 26)
                     {
                         mousePreviouslyDown = true;
+                        addStage = AddModeStage.ChoosingType;
                         showPopup = true;
                         newFileName = "";
-                        waitingForInput = true;
                     }
                 }
 
-                
+                if (!showPopup)
+                {
+                    HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
+                }
 
-                HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
                 HandleTextInput();
             }
+
 
 
             HandleScrollWheel();
@@ -143,8 +153,12 @@ namespace PilotOS.Apps
 
                 
             }
+            if (MouseManager.MouseState != MouseState.Left)
+            {
+                mousePreviouslyDown = false;
+            }
 
-            
+
 
 
 
@@ -155,59 +169,101 @@ namespace PilotOS.Apps
             GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorText, px, py, w, h);
             GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, px + 2, py + 2, w - 4, h - 4);
 
-            GUI.MainCanvas.DrawString("New file name:", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 10);
-            GUI.MainCanvas.DrawString(newFileName + "_", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 30);
-
-            // Buttons
-            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + 10, py + 55, 60, 18);
-            GUI.MainCanvas.DrawString("Done", GUI.FontDefault, GUI.colors.ColorText, px + 20, py + 58);
-
-            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + w - 70, py + 55, 60, 18);
-            GUI.MainCanvas.DrawString("Cancel", GUI.FontDefault, GUI.colors.ColorText, px + w - 60, py + 58);
-
-            // Handle mouse clicks on buttons
             int mx = (int)MouseManager.X;
             int my = (int)MouseManager.Y;
 
-            if (MouseManager.MouseState == MouseState.Left && !mousePreviouslyDown)
+            if (addStage == AddModeStage.ChoosingType)
             {
-                if (mx >= px + 10 && mx <= px + 70 && my >= py + 55 && my <= py + 73)
+                GUI.MainCanvas.DrawString("Create:", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 10);
+
+                // File Button
+                GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + 10, py + 35, 80, 20);
+                GUI.MainCanvas.DrawString("File", GUI.FontDefault, GUI.colors.ColorText, px + 35, py + 38);
+
+                // Folder Button
+                GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + 110, py + 35, 80, 20);
+                GUI.MainCanvas.DrawString("Folder", GUI.FontDefault, GUI.colors.ColorText, px + 130, py + 38);
+
+                if (MouseManager.MouseState == MouseState.Left && !mousePreviouslyDown)
                 {
-                    // Done clicked
-                    if (!string.IsNullOrWhiteSpace(newFileName))
+                    if (mx >= px + 10 && mx <= px + 90 && my >= py + 35 && my <= py + 55)
                     {
-                        string newFilePath = Path;
-                        if (!newFilePath.EndsWith("\\")) newFilePath += "\\";
-                        newFilePath += newFileName;
-
-                        try
-                        {
-                            File.WriteAllText(newFilePath, "");
-                        }
-                        catch { }
-
+                        isFolderCreation = false;
+                        addStage = AddModeStage.Naming;
+                        waitingForInput = true;
+                        mousePreviouslyDown = true;
                     }
-
-                    showPopup = false;
-                    waitingForInput = false;
-                    newFileName = "";
-                    mousePreviouslyDown = true;
+                    else if (mx >= px + 110 && mx <= px + 190 && my >= py + 35 && my <= py + 55)
+                    {
+                        isFolderCreation = true;
+                        addStage = AddModeStage.Naming;
+                        waitingForInput = true;
+                        mousePreviouslyDown = true;
+                    }
                 }
-                else if (mx >= px + w - 70 && mx <= px + w - 10 && my >= py + 55 && my <= py + 73)
+            }
+            else if (addStage == AddModeStage.Naming)
+            {
+                GUI.MainCanvas.DrawString("Enter name:", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 10);
+                GUI.MainCanvas.DrawString(newFileName + "_", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 30);
+
+                // Done Button
+                GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + 10, py + 55, 60, 18);
+                GUI.MainCanvas.DrawString("Done", GUI.FontDefault, GUI.colors.ColorText, px + 20, py + 58);
+
+                // Cancel Button
+                GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + w - 70, py + 55, 60, 18);
+                GUI.MainCanvas.DrawString("Cancel", GUI.FontDefault, GUI.colors.ColorText, px + w - 60, py + 58);
+
+                if (MouseManager.MouseState == MouseState.Left && !mousePreviouslyDown)
                 {
-                    // Cancel clicked
-                    showPopup = false;
-                    waitingForInput = false;
-                    newFileName = "";
-                    mousePreviouslyDown = true;
+                    if (mx >= px + 10 && mx <= px + 70 && my >= py + 55 && my <= py + 73)
+                    {
+                        if (!string.IsNullOrWhiteSpace(newFileName))
+                        {
+                            string fullPath = Path;
+                            if (!fullPath.EndsWith("\\")) fullPath += "\\";
+                            fullPath += newFileName;
+
+                            try
+                            {
+                                if (isFolderCreation)
+                                {
+                                    Directory.CreateDirectory(fullPath);
+                                }
+                                else
+                                {
+                                    File.WriteAllText(fullPath, "");
+                                }
+                            }
+                            catch { }
+                        }
+
+                        showPopup = false;
+                        waitingForInput = false;
+                        newFileName = "";
+                        addStage = AddModeStage.None;
+                        mousePreviouslyDown = true;
+                    }
+                    else if (mx >= px + w - 70 && mx <= px + w - 10 && my >= py + 55 && my <= py + 73)
+                    {
+                        // Cancel clicked
+                        showPopup = false;
+                        waitingForInput = false;
+                        newFileName = "";
+                        addStage = AddModeStage.None;
+                        mousePreviouslyDown = true;
+                    }
                 }
             }
         }
 
+
         private void HandleTextInput()
         {
-            if (!waitingForInput || !WindowData.selected)
-                return;
+            if (!waitingForInput || addStage != AddModeStage.Naming || !WindowData.selected)
+    return;
+
 
             if (Cosmos.System.KeyboardManager.TryReadKey(out var key))
             {
