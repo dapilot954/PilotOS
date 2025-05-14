@@ -13,5 +13,6 @@ namespace PilotOS.System
         public Color ColorDark = Color.FromArgb(25, 28, 33);
         public Color ColorText = Color.White;
         public Color ColorExplorer = Color.FromArgb(25, 28, 33);
+        public Color ColorSelected = Color.FromArgb(69, 68, 92);
     }
 }

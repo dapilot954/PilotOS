@@ -18,6 +18,7 @@ namespace PilotOS.Graphics
 {
     public static class GUI
     {
+
         public static int ScreenSizeX = 1920, ScreenSizeY = 1080;
         public static SVGAIICanvas MainCanvas;
         public static Bitmap Wallpaper, Cursor;

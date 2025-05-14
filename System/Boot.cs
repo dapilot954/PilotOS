@@ -18,6 +18,7 @@ namespace PilotOS.System
             GUI.Cursor = new Bitmap(Resources.Files.PilotOSCursorRaw);
             FileExplorer.Folder = new Bitmap(Resources.Files.PilotOSFolderRaw);
             FileExplorer.File = new Bitmap(Resources.Files.PilotOSFileRaw);
+            FileExplorer.BackIcon = new Bitmap(Resources.Files.PilotOSBackRaw);
             GUI.StartGUI();
         }
     }

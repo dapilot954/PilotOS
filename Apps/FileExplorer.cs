@@ -13,8 +13,13 @@ namespace PilotOS.Apps
 {
     public class FileExplorer : Process
     {
+        private string selectedItem = null;
+        private string lastClickedItem = null;
+        private DateTime lastClickTime = DateTime.MinValue;
+        private bool mousePreviouslyDown = false;
         public static Bitmap Folder;
         public static Bitmap File;
+        public static Bitmap BackIcon;
         public string Path = @"0:\";
         public static int scrollOffset = 0;
         private const int itemHeight = 30;
@@ -38,10 +43,134 @@ namespace PilotOS.Apps
             string Disp_path = TrimStringFromLeft(Path, SizeX - 30);
             GUI.MainCanvas.DrawString(Disp_path, GUI.FontDefault, GUI.colors.ColorText, x + 2, y + Window.TopSize + 7);
 
+
+
+            // Back icon position
+            int backIconSize = 26;
+            int backIconX = x + SizeX - backIconSize - 2;
+            int backIconY = y + Window.TopSize + 2;
+
+            // Draw the back icon
+            GUI.MainCanvas.DrawImageAlpha(BackIcon, backIconX, backIconY);
+
+            // Handle back icon click
+            if (MouseManager.MouseState == MouseState.Left)
+            {
+                int mx = (int)MouseManager.X;
+                int my = (int)MouseManager.Y;
+
+                if (!mousePreviouslyDown && mx >= backIconX && mx <= backIconX + backIconSize &&
+                    my >= backIconY && my <= backIconY + backIconSize)
+                {
+                    mousePreviouslyDown = true;
+
+                    if (Path != @"0:\")
+                    {
+                        // Trim trailing slash if present
+                        if (Path.EndsWith("\\"))
+                            Path = Path.Substring(0, Path.Length - 1);
+
+                        int lastSlash = Path.LastIndexOf('\\');
+                        if (lastSlash >= 0)
+                            Path = Path.Substring(0, lastSlash);
+
+                        if (!Path.EndsWith("\\"))
+                            Path += "\\";
+
+                        scrollOffset = 0;
+                    }
+                }
+            }
+
+
+
+
             HandleScrollWheel();
 
             DrawList(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
+
+
+            if (WindowData.selected)
+            {
+                HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
+            }
+                
+
+
+
         }
+        private void HandleMouseClick(int startX, int startY, int width, int height, List<string> folders, List<string> files)
+        {
+            bool mouseDown = MouseManager.MouseState == MouseState.Left;
+            if (!mouseDown)
+            {
+                mousePreviouslyDown = false;
+                return;
+            }
+
+            // Prevent holding click
+            if (mousePreviouslyDown)
+                return;
+
+            mousePreviouslyDown = true;
+
+            int mouseX = (int)MouseManager.X;
+            int mouseY = (int)MouseManager.Y;
+
+            if (mouseX < startX || mouseX > startX + width || mouseY < startY || mouseY > startY + height)
+                return;
+
+            var allItems = folders.Select(f => (f, true)).Concat(files.Select(f => (f, false))).ToList();
+
+            int yOffset = -scrollOffset;
+            bool itemClicked = false;
+
+            for (int i = 0; i < allItems.Count; i++)
+            {
+                int itemY = startY + (i * itemHeight) + yOffset;
+                if (itemY + itemHeight < startY || itemY > startY + height)
+                    continue;
+
+                if (mouseY >= itemY && mouseY <= itemY + itemHeight)
+                {
+                    var (item, isFolder) = allItems[i];
+                    selectedItem = item;
+                    itemClicked = true;
+
+                    TimeSpan timeSinceLastClick = DateTime.Now - lastClickTime;
+                    bool doubleClicked = item == lastClickedItem && timeSinceLastClick.TotalMilliseconds < 500;
+
+                    lastClickedItem = item;
+                    lastClickTime = DateTime.Now;
+
+                    if (doubleClicked)
+                    {
+                        if (isFolder)
+                        {
+                            string itemName = item.Substring(item.LastIndexOf('\\') + 1);
+                            if (!Path.EndsWith("\\"))
+                                Path += "\\";
+                            Path += itemName + "\\";
+
+                            scrollOffset = 0;
+                        }
+                        else
+                        {
+                            // Later: Add code to "open" files
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            // Deselect if clicked on empty area
+            if (!itemClicked)
+            {
+                selectedItem = null;
+            }
+        }
+
 
         private void HandleScrollWheel()
         {
@@ -59,7 +188,6 @@ namespace PilotOS.Apps
         {
             var allItems = folders.Select(f => (f, true)).Concat(files.Select(f => (f, false))).ToList();
 
-            int maxVisibleItems = height / itemHeight;
             int totalHeight = allItems.Count * itemHeight;
             int maxOffset = Math.Max(0, totalHeight - height);
             if (scrollOffset > maxOffset) scrollOffset = maxOffset;
@@ -69,37 +197,54 @@ namespace PilotOS.Apps
             for (int i = 0; i < allItems.Count; i++)
             {
                 int itemY = startY + (i * itemHeight) + yOffset;
+
+                // Skip items outside the visible window bounds
                 if (itemY + itemHeight < startY || itemY > startY + height)
-                    continue; // Skip drawing outside visible area
+                    continue;
 
                 var (name, isFolder) = allItems[i];
 
                 string itemName = name.Substring(name.LastIndexOf('\\') + 1);
 
-                // Icon position (left-aligned)
+                // Icon and text positions
                 int iconX = startX + 4;
                 int iconY = itemY + (itemHeight - 25) / 2;
 
-                // Text position (to the right of icon)
                 int textX = iconX + 25 + 5;
-                int textY = itemY + (itemHeight - 16) / 2; // roughly center vertically
+                int textY = itemY + (itemHeight - 16) / 2;
 
-                GUI.MainCanvas.DrawString(
-                    TrimStringFromRight(itemName, width - (textX - startX) - 5),
-                    GUI.FontDefault,
-                    GUI.colors.ColorText,
-                    textX,
-                    textY
-                );
+                if (name == selectedItem)
+                {
+                    GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorSelected, startX + 1, itemY + 1, width - 8, itemHeight - 2);
+                }
 
-                if (isFolder)
-                    GUI.MainCanvas.DrawImageAlpha(Folder, iconX, iconY);
-                else
-                    GUI.MainCanvas.DrawImageAlpha(File, iconX, iconY);
+
+                // Draw icon (only if vertically visible)
+                if (iconY >= startY && iconY + 25 <= startY + height)
+                {
+                    if (isFolder)
+                        GUI.MainCanvas.DrawImageAlpha(Folder, iconX, iconY);
+                    else
+                        GUI.MainCanvas.DrawImageAlpha(File, iconX, iconY);
+                }
+
+                // Draw text (only if vertically visible)
+                if (itemY >= startY && itemY + itemHeight <= startY + height)
+                {
+                    GUI.MainCanvas.DrawString(
+                        TrimStringFromRight(itemName, width - (textX - startX) - 10),
+                        GUI.FontDefault,
+                        GUI.colors.ColorText,
+                        textX,
+                        textY
+                    );
+                }
             }
+
 
             DrawScrollBar(startX + width - 6, startY, 6, height, totalHeight);
         }
+
 
 
         private void DrawScrollBar(int x, int y, int width, int height, int contentHeight)
