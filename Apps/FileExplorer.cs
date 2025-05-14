@@ -18,12 +18,17 @@ namespace PilotOS.Apps
         private DateTime lastClickTime = DateTime.MinValue;
         private bool mousePreviouslyDown = false;
         public static Bitmap Folder;
-        public static Bitmap File;
+        public static Bitmap FileIcon;
         public static Bitmap BackIcon;
+        public static Bitmap AddIcon;
         public string Path = @"0:\";
         public static int scrollOffset = 0;
         private const int itemHeight = 30;
         private const int scrollSpeed = 10;
+
+        private bool showPopup = false;
+        private string newFileName = "";
+        private bool waitingForInput = false;
 
         public override void Run()
         {
@@ -54,35 +59,74 @@ namespace PilotOS.Apps
             GUI.MainCanvas.DrawImageAlpha(BackIcon, backIconX, backIconY);
 
             // Handle back icon click
-            if (MouseManager.MouseState == MouseState.Left)
+            if (!showPopup)
             {
-                int mx = (int)MouseManager.X;
-                int my = (int)MouseManager.Y;
 
-                if (!mousePreviouslyDown && mx >= backIconX && mx <= backIconX + backIconSize &&
-                    my >= backIconY && my <= backIconY + backIconSize)
+
+
+                if (MouseManager.MouseState == MouseState.Left)
                 {
-                    mousePreviouslyDown = true;
+                    int mx = (int)MouseManager.X;
+                    int my = (int)MouseManager.Y;
 
-                    if (Path != @"0:\")
+                    if (!mousePreviouslyDown && mx >= backIconX && mx <= backIconX + backIconSize &&
+                        my >= backIconY && my <= backIconY + backIconSize)
                     {
-                        // Trim trailing slash if present
-                        if (Path.EndsWith("\\"))
-                            Path = Path.Substring(0, Path.Length - 1);
+                        mousePreviouslyDown = true;
 
-                        int lastSlash = Path.LastIndexOf('\\');
-                        if (lastSlash >= 0)
-                            Path = Path.Substring(0, lastSlash);
+                        if (Path != @"0:\")
+                        {
+                            // Trim trailing slash if present
+                            if (Path.EndsWith("\\"))
+                                Path = Path.Substring(0, Path.Length - 1);
 
-                        if (!Path.EndsWith("\\"))
-                            Path += "\\";
+                            int lastSlash = Path.LastIndexOf('\\');
+                            if (lastSlash >= 0)
+                                Path = Path.Substring(0, lastSlash);
 
-                        scrollOffset = 0;
+                            if (!Path.EndsWith("\\"))
+                                Path += "\\";
+
+                            scrollOffset = 0;
+                        }
                     }
                 }
             }
 
+            int addIconX = backIconX - 26 - 4; // 4px gap from back icon
+            int addIconY = backIconY;
+            GUI.MainCanvas.DrawImageAlpha(AddIcon, addIconX, addIconY);
 
+            if (showPopup)
+            {
+                DrawPopup(x + (SizeX / 2) - 100, y + (SizeY / 2) - 40, 200, 80);
+            }
+
+            if (WindowData.selected)
+            {
+                // Draw Add icon
+
+
+                if (MouseManager.MouseState == MouseState.Left)
+                {
+                    int mx = (int)MouseManager.X;
+                    int my = (int)MouseManager.Y;
+
+                    if (!mousePreviouslyDown && mx >= addIconX && mx <= addIconX + 26 &&
+                        my >= addIconY && my <= addIconY + 26)
+                    {
+                        mousePreviouslyDown = true;
+                        showPopup = true;
+                        newFileName = "";
+                        waitingForInput = true;
+                    }
+                }
+
+                
+
+                HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
+                HandleTextInput();
+            }
 
 
             HandleScrollWheel();
@@ -92,13 +136,113 @@ namespace PilotOS.Apps
 
             if (WindowData.selected)
             {
-                HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
-            }
+                if (!showPopup)
+                {
+                    HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
+                }
+
                 
+            }
+
+            
 
 
 
         }
+
+        private void DrawPopup(int px, int py, int w, int h)
+        {
+            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorText, px, py, w, h);
+            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, px + 2, py + 2, w - 4, h - 4);
+
+            GUI.MainCanvas.DrawString("New file name:", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 10);
+            GUI.MainCanvas.DrawString(newFileName + "_", GUI.FontDefault, GUI.colors.ColorText, px + 10, py + 30);
+
+            // Buttons
+            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + 10, py + 55, 60, 18);
+            GUI.MainCanvas.DrawString("Done", GUI.FontDefault, GUI.colors.ColorText, px + 20, py + 58);
+
+            GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorExplorer, px + w - 70, py + 55, 60, 18);
+            GUI.MainCanvas.DrawString("Cancel", GUI.FontDefault, GUI.colors.ColorText, px + w - 60, py + 58);
+
+            // Handle mouse clicks on buttons
+            int mx = (int)MouseManager.X;
+            int my = (int)MouseManager.Y;
+
+            if (MouseManager.MouseState == MouseState.Left && !mousePreviouslyDown)
+            {
+                if (mx >= px + 10 && mx <= px + 70 && my >= py + 55 && my <= py + 73)
+                {
+                    // Done clicked
+                    if (!string.IsNullOrWhiteSpace(newFileName))
+                    {
+                        string newFilePath = Path;
+                        if (!newFilePath.EndsWith("\\")) newFilePath += "\\";
+                        newFilePath += newFileName;
+
+                        try
+                        {
+                            File.WriteAllText(newFilePath, "");
+                        }
+                        catch { }
+
+                    }
+
+                    showPopup = false;
+                    waitingForInput = false;
+                    newFileName = "";
+                    mousePreviouslyDown = true;
+                }
+                else if (mx >= px + w - 70 && mx <= px + w - 10 && my >= py + 55 && my <= py + 73)
+                {
+                    // Cancel clicked
+                    showPopup = false;
+                    waitingForInput = false;
+                    newFileName = "";
+                    mousePreviouslyDown = true;
+                }
+            }
+        }
+
+        private void HandleTextInput()
+        {
+            if (!waitingForInput || !WindowData.selected)
+                return;
+
+            if (Cosmos.System.KeyboardManager.TryReadKey(out var key))
+            {
+                if (key.Key == ConsoleKeyEx.Backspace)
+                {
+                    if (newFileName.Length > 0)
+                        newFileName = newFileName.Remove(newFileName.Length - 1);
+                }
+                else if (key.Key == ConsoleKeyEx.Enter)
+                {
+                    if (!string.IsNullOrWhiteSpace(newFileName))
+                    {
+                        string newFilePath = Path;
+                        if (!newFilePath.EndsWith("\\")) newFilePath += "\\";
+                        newFilePath += newFileName;
+
+                        try
+                        {
+                            File.WriteAllText(newFilePath, "");
+                        }
+                        catch { }
+
+                    }
+
+                    showPopup = false;
+                    waitingForInput = false;
+                    newFileName = "";
+                }
+                else
+                {
+                    newFileName += key.KeyChar;
+                }
+            }
+        }
+
         private void HandleMouseClick(int startX, int startY, int width, int height, List<string> folders, List<string> files)
         {
             bool mouseDown = MouseManager.MouseState == MouseState.Left;
@@ -225,7 +369,7 @@ namespace PilotOS.Apps
                     if (isFolder)
                         GUI.MainCanvas.DrawImageAlpha(Folder, iconX, iconY);
                     else
-                        GUI.MainCanvas.DrawImageAlpha(File, iconX, iconY);
+                        GUI.MainCanvas.DrawImageAlpha(FileIcon, iconX, iconY);
                 }
 
                 // Draw text (only if vertically visible)
