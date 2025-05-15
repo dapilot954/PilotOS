@@ -24,6 +24,7 @@
       <None Remove="Resources\Cursors\cursor1.bmp" />
       <None Remove="Resources\FileIcons\AddIcon.bmp" />
       <None Remove="Resources\FileIcons\BackIcon.bmp" />
+      <None Remove="Resources\FileIcons\DeleteIcon.bmp" />
       <None Remove="Resources\FileIcons\FileIcon.bmp" />
       <None Remove="Resources\FileIcons\FolderIcon.bmp" />
       <None Remove="Resources\Wallpapers\image.bmp" />
@@ -33,6 +34,7 @@
       <EmbeddedResource Include="Resources\Cursors\cursor1.bmp" />
       <EmbeddedResource Include="Resources\FileIcons\AddIcon.bmp" />
       <EmbeddedResource Include="Resources\FileIcons\BackIcon.bmp" />
+      <EmbeddedResource Include="Resources\FileIcons\DeleteIcon.bmp" />
       <EmbeddedResource Include="Resources\FileIcons\FileIcon.bmp" />
       <EmbeddedResource Include="Resources\FileIcons\FolderIcon.bmp" />
       <EmbeddedResource Include="Resources\Wallpapers\image.bmp" />

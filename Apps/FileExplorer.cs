@@ -24,7 +24,8 @@ namespace PilotOS.Apps
         private AddModeStage addStage = AddModeStage.None;
         private bool isFolderCreation = false;
 
-        private string selectedItem = null;
+        private SelectedItemData selectedItem = null;
+
         private string lastClickedItem = null;
         private DateTime lastClickTime = DateTime.MinValue;
         private bool mousePreviouslyDown = false;
@@ -45,6 +46,8 @@ namespace PilotOS.Apps
 
         public override void Run()
         {
+            
+
             int x = WindowData.WinPos.X;
             int y = WindowData.WinPos.Y;
             int SizeX = WindowData.WinPos.Width;
@@ -61,54 +64,29 @@ namespace PilotOS.Apps
             string Disp_path = TrimStringFromLeft(Path, SizeX - 30);
             GUI.MainCanvas.DrawString(Disp_path, GUI.FontDefault, GUI.colors.ColorText, x + 2, y + Window.TopSize + 7);
 
-
-
-            // Back icon position
+            // Icon positions
             int backIconSize = 26;
             int backIconX = x + SizeX - backIconSize - 2;
             int backIconY = y + Window.TopSize + 2;
 
-            // Draw the back icon
-            GUI.MainCanvas.DrawImageAlpha(BackIcon, backIconX, backIconY);
-
-            // Handle back icon click
-            if (!showPopup)
-            {
-
-
-
-                if (MouseManager.MouseState == MouseState.Left)
-                {
-                    int mx = (int)MouseManager.X;
-                    int my = (int)MouseManager.Y;
-
-                    if (!mousePreviouslyDown && mx >= backIconX && mx <= backIconX + backIconSize &&
-                        my >= backIconY && my <= backIconY + backIconSize)
-                    {
-                        mousePreviouslyDown = true;
-
-                        if (Path != @"0:\")
-                        {
-                            // Trim trailing slash if present
-                            if (Path.EndsWith("\\"))
-                                Path = Path.Substring(0, Path.Length - 1);
-
-                            int lastSlash = Path.LastIndexOf('\\');
-                            if (lastSlash >= 0)
-                                Path = Path.Substring(0, lastSlash);
-
-                            if (!Path.EndsWith("\\"))
-                                Path += "\\";
-
-                            scrollOffset = 0;
-                        }
-                    }
-                }
-            }
-
-            int addIconX = backIconX - 26 - 4; // 4px gap from back icon
+            int addIconX = backIconX - 26 - 4;
             int addIconY = backIconY;
+
+            int deleteIconX = addIconX - 26;
+            int deleteIconY = addIconY;
+
+            // Draw icons
+            GUI.MainCanvas.DrawImageAlpha(BackIcon, backIconX, backIconY);
             GUI.MainCanvas.DrawImageAlpha(AddIcon, addIconX, addIconY);
+            GUI.MainCanvas.DrawImageAlpha(DeleteIcon, deleteIconX, deleteIconY);
+
+            // Handle mouse press once
+            if (MouseManager.MouseState == MouseState.Left && !mousePreviouslyDown)
+            {
+                int mx = (int)MouseManager.X;
+                int my = (int)MouseManager.Y;
+                HandleMousePress(mx, my, backIconX, backIconY, addIconX, addIconY, deleteIconX, deleteIconY);
+            }
 
             if (showPopup)
             {
@@ -117,54 +95,156 @@ namespace PilotOS.Apps
 
             if (WindowData.selected)
             {
-                if (MouseManager.MouseState == MouseState.Left)
-                {
-                    int mx = (int)MouseManager.X;
-                    int my = (int)MouseManager.Y;
-
-                    if (!mousePreviouslyDown && mx >= addIconX && mx <= addIconX + 26 && my >= addIconY && my <= addIconY + 26)
-                    {
-                        mousePreviouslyDown = true;
-                        addStage = AddModeStage.ChoosingType;
-                        showPopup = true;
-                        newFileName = "";
-                    }
-                }
-
                 if (!showPopup)
-                {
-                    HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
-                }
-
+                { HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files); }
                 HandleTextInput();
             }
 
-
-
             HandleScrollWheel();
-
             DrawList(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
 
-
-            if (WindowData.selected)
-            {
-                if (!showPopup)
-                {
-                    HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files);
-                }
-
-                
-            }
             if (MouseManager.MouseState != MouseState.Left)
             {
                 mousePreviouslyDown = false;
             }
-
-
-
-
-
         }
+
+        private void HandleMousePress(int mx, int my, int backIconX, int backIconY, int addIconX, int addIconY, int deleteIconX, int deleteIconY)
+        {
+            // Back button logic
+            if (!showPopup && mx >= backIconX && mx <= backIconX + 26 &&
+                my >= backIconY && my <= backIconY + 26)
+            {
+                mousePreviouslyDown = true;
+
+                if (Path != @"0:\")
+                {
+                    if (Path.EndsWith("\\"))
+                        Path = Path.Substring(0, Path.Length - 1);
+
+                    int lastSlash = Path.LastIndexOf('\\');
+                    if (lastSlash >= 0)
+                        Path = Path.Substring(0, lastSlash);
+
+                    if (!Path.EndsWith("\\"))
+                        Path += "\\";
+
+                    scrollOffset = 0;
+                }
+                return;
+            }
+
+            // Add button logic
+            if (WindowData.selected && mx >= addIconX && mx <= addIconX + 26 &&
+                my >= addIconY && my <= addIconY + 26)
+            {
+                mousePreviouslyDown = true;
+                addStage = AddModeStage.ChoosingType;
+                showPopup = true;
+                newFileName = "";
+                return;
+            }
+
+            // Delete button logic
+            if (!showPopup && mx >= deleteIconX && mx <= deleteIconX + 26 &&
+                my >= deleteIconY && my <= deleteIconY + 26)
+            {
+                mousePreviouslyDown = true;
+
+                if (selectedItem != null)
+                {
+                    if (selectedItem.Type == SelectedItemData.ItemType.Folder)
+                    {
+                        try
+                        {
+                            //PurgeDirectory(Path + selectedItem.Name);
+                            Directory.Delete(Path + selectedItem.Name, true);
+                        }
+                        catch (Exception ex)
+                        {
+                            ProcessManager.start(new Terminal
+                            {
+                                WindowData = new WindowData
+                                {
+                                    WinPos = new Rectangle(100, 100, 700, 700),
+                                    args = "echo an error occured " + ex.Message,
+                                },
+                                Name = "Debug"
+                            });
+                        }
+
+                    }
+                    else if (selectedItem.Type == SelectedItemData.ItemType.File)
+                    {
+                        try
+                        {
+                            File.Delete(Path + selectedItem.Name);
+                        }
+                        catch (Exception ex)
+                        {
+                            ProcessManager.start(new Terminal
+                            {
+                                WindowData = new WindowData
+                                {
+                                    WinPos = new Rectangle(100, 100, 700, 700),
+                                    args = "echo an error occured "+ ex.Message,
+                                },
+                                Name = "Debug"
+                            });
+                        }
+                        
+                    }
+                }
+
+                // Optional: Remove this test terminal spawn if no longer needed
+                /*
+                ProcessManager.start(new Terminal
+                {
+                    WindowData = new WindowData
+                    {
+                        WinPos = new Rectangle(100, 100, 700, 700),
+                        args = "echo delete pressed, " + selectedItem.Name + selectedItem.Type
+                    },
+                    Name = "Terminal"
+                });
+                */
+            }
+        }
+
+        public static void PurgeDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+                return;
+
+            // Delete all files
+            foreach (var file in Directory.GetFiles(path))
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch 
+                {
+                    
+                }
+            }
+
+            // Recursively purge all subdirectories
+            foreach (var dir in Directory.GetDirectories(path))
+            {
+                try
+                {
+                    //PurgeDirectory(dir); // Recursively purge
+                    Directory.Delete(dir, true); // Then delete empty folder
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+
 
         private void DrawPopup(int px, int py, int w, int h)
         {
@@ -260,7 +340,6 @@ namespace PilotOS.Apps
             }
         }
 
-
         private void HandleTextInput()
         {
             if (!waitingForInput || addStage != AddModeStage.Naming || !WindowData.selected)
@@ -322,7 +401,6 @@ namespace PilotOS.Apps
                 return;
             }
 
-            // Prevent holding click
             if (mousePreviouslyDown)
                 return;
 
@@ -348,7 +426,9 @@ namespace PilotOS.Apps
                 if (mouseY >= itemY && mouseY <= itemY + itemHeight)
                 {
                     var (item, isFolder) = allItems[i];
-                    selectedItem = item;
+
+                    // 👇 NEW: Store both name and type
+                    selectedItem = new SelectedItemData(item, isFolder ? SelectedItemData.ItemType.Folder : SelectedItemData.ItemType.File);
                     itemClicked = true;
 
                     TimeSpan timeSinceLastClick = DateTime.Now - lastClickTime;
@@ -370,7 +450,7 @@ namespace PilotOS.Apps
                         }
                         else
                         {
-                            // Later: Add code to "open" files
+                            // TODO: Add file opening logic
                         }
                     }
 
@@ -378,13 +458,11 @@ namespace PilotOS.Apps
                 }
             }
 
-            // Deselect if clicked on empty area
             if (!itemClicked)
             {
                 selectedItem = null;
             }
         }
-
 
         private void HandleScrollWheel()
         {
@@ -417,7 +495,6 @@ namespace PilotOS.Apps
                     continue;
 
                 var (name, isFolder) = allItems[i];
-
                 string itemName = name.Substring(name.LastIndexOf('\\') + 1);
 
                 // Icon and text positions
@@ -427,11 +504,14 @@ namespace PilotOS.Apps
                 int textX = iconX + 25 + 5;
                 int textY = itemY + (itemHeight - 16) / 2;
 
-                if (name == selectedItem)
+                // ✅ Only draw selection bar if both name and type match
+                if (selectedItem != null &&
+                    selectedItem.Name == name &&
+                    ((isFolder && selectedItem.Type == SelectedItemData.ItemType.Folder) ||
+                     (!isFolder && selectedItem.Type == SelectedItemData.ItemType.File)))
                 {
                     GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorSelected, startX + 1, itemY + 1, width - 8, itemHeight - 2);
                 }
-
 
                 // Draw icon (only if vertically visible)
                 if (iconY >= startY && iconY + 25 <= startY + height)
@@ -455,11 +535,8 @@ namespace PilotOS.Apps
                 }
             }
 
-
             DrawScrollBar(startX + width - 6, startY, 6, height, totalHeight);
         }
-
-
 
         private void DrawScrollBar(int x, int y, int width, int height, int contentHeight)
         {
@@ -511,5 +588,21 @@ namespace PilotOS.Apps
             string trimmed = input.Substring(0, visibleChars);
             return trimmed + ellipsis;
         }
+
+        private class SelectedItemData
+        {
+            public enum ItemType { File, Folder }
+            public string Name;
+            public ItemType Type;
+
+            public SelectedItemData(string name, ItemType type)
+            {
+                Name = name;
+                Type = type;
+            }
+
+            public override string ToString() => $"{Type}: {Name}";
+        }
+
     }
 }
