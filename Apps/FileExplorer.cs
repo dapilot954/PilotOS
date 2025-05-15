@@ -157,8 +157,7 @@ namespace PilotOS.Apps
                     {
                         try
                         {
-                            //PurgeDirectory(Path + selectedItem.Name);
-                            Directory.Delete(Path + selectedItem.Name, true);
+                            Directory.Delete(Path + selectedItem.Name + "\\", true);
                         }
                         catch (Exception ex)
                         {
@@ -196,54 +195,8 @@ namespace PilotOS.Apps
                     }
                 }
 
-                // Optional: Remove this test terminal spawn if no longer needed
-                /*
-                ProcessManager.start(new Terminal
-                {
-                    WindowData = new WindowData
-                    {
-                        WinPos = new Rectangle(100, 100, 700, 700),
-                        args = "echo delete pressed, " + selectedItem.Name + selectedItem.Type
-                    },
-                    Name = "Terminal"
-                });
-                */
             }
         }
-
-        public static void PurgeDirectory(string path)
-        {
-            if (!Directory.Exists(path))
-                return;
-
-            // Delete all files
-            foreach (var file in Directory.GetFiles(path))
-            {
-                try
-                {
-                    File.Delete(file);
-                }
-                catch 
-                {
-                    
-                }
-            }
-
-            // Recursively purge all subdirectories
-            foreach (var dir in Directory.GetDirectories(path))
-            {
-                try
-                {
-                    //PurgeDirectory(dir); // Recursively purge
-                    Directory.Delete(dir, true); // Then delete empty folder
-                }
-                catch
-                {
-
-                }
-            }
-        }
-
 
 
         private void DrawPopup(int px, int py, int w, int h)
@@ -343,8 +296,7 @@ namespace PilotOS.Apps
         private void HandleTextInput()
         {
             if (!waitingForInput || addStage != AddModeStage.Naming || !WindowData.selected)
-    return;
-
+                return;
 
             if (Cosmos.System.KeyboardManager.TryReadKey(out var key))
             {
@@ -352,10 +304,6 @@ namespace PilotOS.Apps
                 {
                     if (newFileName.Length > 0)
                         newFileName = newFileName.Remove(newFileName.Length - 1);
-                }
-                else if (key.Key == ConsoleKeyEx.Minus)
-                {
-
                 }
                 else if (key.Key == ConsoleKeyEx.Enter)
                 {
@@ -384,13 +332,57 @@ namespace PilotOS.Apps
                     newFileName = "";
                     addStage = AddModeStage.None;
                 }
-
                 else
                 {
-                    newFileName += key.KeyChar;
+                    char c = key.KeyChar;
+
+                    // Optionally, restrict to alphanumeric and '.' (skip others)
+                    if (!char.IsLetterOrDigit(c) && c != '.')
+                        return;
+
+                    if (isFolderCreation)
+                    {
+                        // Allow only up to 8 characters, no dot
+                        if (char.IsLetterOrDigit(c) && newFileName.Length < 8)
+                        {
+                            newFileName += c;
+                        }
+                    }
+                    else
+                    {
+                        // File creation - enforce 8.3 format
+                        int dotIndex = newFileName.IndexOf('.');
+
+                        if (dotIndex == -1)
+                        {
+                            // No dot yet
+                            if (c == '.')
+                            {
+                                if (newFileName.Length > 0 && newFileName.Length <= 8)
+                                {
+                                    newFileName += c;
+                                }
+                            }
+                            else if (newFileName.Length < 8)
+                            {
+                                newFileName += c;
+                            }
+                        }
+                        else
+                        {
+                            // Dot exists, count extension length
+                            int extLength = newFileName.Length - dotIndex - 1;
+                            if (extLength < 3 && c != '.')
+                            {
+                                newFileName += c;
+                            }
+                        }
+                    }
                 }
             }
         }
+
+
 
         private void HandleMouseClick(int startX, int startY, int width, int height, List<string> folders, List<string> files)
         {
