@@ -97,7 +97,6 @@ namespace PilotOS.Apps
             {
                 if (!showPopup)
                 { HandleMouseClick(x, y + Window.TopSize + 35, SizeX, SizeY - Window.TopSize - 35, Directories, Files); }
-                HandleTextInput();
             }
 
             HandleScrollWheel();
@@ -295,14 +294,10 @@ namespace PilotOS.Apps
 
         public override void OnKeyPressed(KeyEvent key)
         {
-            
-        }
-        private void HandleTextInput()
-        {
             if (!waitingForInput || addStage != AddModeStage.Naming || !WindowData.selected)
                 return;
 
-            if (Cosmos.System.KeyboardManager.TryReadKey(out var key))
+            if (key != null)
             {
                 if (key.Key == ConsoleKeyEx.Backspace)
                 {
@@ -385,6 +380,7 @@ namespace PilotOS.Apps
                 }
             }
         }
+        
 
 
 
