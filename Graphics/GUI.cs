@@ -122,7 +122,7 @@ namespace PilotOS.Graphics
                     var win = proc.WindowData.WinPos;
 
                     // Check if mouse is inside the top bar area of this process
-                    if (MX >= win.X && MX < win.X + win.Width &&
+                    if (MX >= win.X && MX < win.X + win.Width - 30 &&
                         MY >= win.Y && MY < win.Y + Window.TopSize)
                     {
                         bool covered = false;
