@@ -78,6 +78,26 @@ namespace PilotOS.Apps
             lines_perm.Clear();
         }
 
+        public override void OnKeyPressed(KeyEvent key)
+        {
+            var keyChar = key.KeyChar;
+            if (!WindowData.selected)
+                return;
+
+            if (key.Key == ConsoleKeyEx.Backspace)
+            {
+                if (input.Length > 0)
+                    input = input.Remove(input.Length - 1);
+            }
+            else if (key.Key == ConsoleKeyEx.Enter)
+            {
+                execute = true;
+            }
+            else
+            {
+                input += keyChar;
+            }
+        }
         public override void Run()
         {
             int x = WindowData.WinPos.X;
@@ -93,25 +113,6 @@ namespace PilotOS.Apps
             lines.Clear();
             print("PilotOS Terminal version 0.2");
 
-            if (WindowData.selected)
-            {
-                if (Cosmos.System.KeyboardManager.TryReadKey(out var key))
-                {
-                    if (key.Key == ConsoleKeyEx.Backspace)
-                    {
-                        if (input.Length > 0)
-                            input = input.Remove(input.Length - 1);
-                    }
-                    else if (key.Key == ConsoleKeyEx.Enter)
-                    {
-                        execute = true;
-                    }
-                    else
-                    {
-                        input += key.KeyChar;
-                    }
-                }
-            }
 
             if (execute)
             {
@@ -143,6 +144,7 @@ namespace PilotOS.Apps
                 drawY += 16;
             }
         }
+        
 
         private static void MoveLastLines(List<string> source, List<string> target, int count)
         {
