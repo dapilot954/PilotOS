@@ -293,6 +293,10 @@ namespace PilotOS.Apps
             }
         }
 
+        public override void OnKeyPressed(KeyEvent key)
+        {
+            
+        }
         private void HandleTextInput()
         {
             if (!waitingForInput || addStage != AddModeStage.Naming || !WindowData.selected)
