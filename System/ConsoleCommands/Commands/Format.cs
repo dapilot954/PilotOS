@@ -2,6 +2,7 @@
 using PilotOS.System.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,17 +15,19 @@ namespace PilotOS.System.ConsoleCommands.Commands
         public static string[] aliases = { "format" };
         public static void run()
         {
+            Console.WriteLine("Formatting disk...");
+
             if (Kernel.fs.Disks[0].Partitions.Count > 0)
-            {
                 Kernel.fs.Disks[0].DeletePartition(0);
-            }
+
             Kernel.fs.Disks[0].Clear();
-            Kernel.fs.Disks[0].CreatePartition((int)(Kernel.fs.Disks[0].Size / (1024 * 1024)));
+            Kernel.fs.Disks[0].CreatePartition(100); // safer fixed size
             Kernel.fs.Disks[0].FormatPartition(0, "FAT32", true);
-            Console.WriteLine("Success");
-            Console.WriteLine("DoorsOS will reboot in 3 seconds");
-            Thread.Sleep(3000);
+
             Cosmos.System.Power.Reboot();
         }
     }
+
+
+
 }

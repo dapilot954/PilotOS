@@ -34,28 +34,32 @@ namespace PilotOS
 
         protected override void Run()
         {
-            
-            if (RunGUI == false)
+            try
             {
-                Console.WriteLine();
-                Console.Write(Path + ">");
-                var command = Console.ReadLine();
-                CommandRunner.commandrun(command);
-            }
-            else
-            {
-                GUI.Update();
 
+                if (RunGUI == false)
+                {
+                    Console.WriteLine();
+                    Console.Write(Path + ">");
+                    var command = Console.ReadLine();
+                    CommandRunner.commandrun(command);
+                }
+                else
+                {
+                    GUI.Update();
+
+                }
+                if (lastHeapCollect >= 20)
+                {
+                    Heap.Collect();
+                    lastHeapCollect = 0;
+                }
+                else
+                {
+                    lastHeapCollect++;
+                }
             }
-            if (lastHeapCollect >= 20)
-            {
-                Heap.Collect();
-                lastHeapCollect = 0;
-            }
-            else
-            {
-                lastHeapCollect++;
-            }
+            catch (Exception ex) { Console.WriteLine(ex.Message + "\n" ); }
 
 
         }

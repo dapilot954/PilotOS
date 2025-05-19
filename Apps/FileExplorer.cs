@@ -146,7 +146,7 @@ namespace PilotOS.Apps
 
             // Delete button logic
             if (!showPopup && mx >= deleteIconX && mx <= deleteIconX + 26 &&
-                my >= deleteIconY && my <= deleteIconY + 26)
+                my >= deleteIconY && my <= deleteIconY + 26 && WindowData.selected)
             {
                 mousePreviouslyDown = true;
 
@@ -323,7 +323,10 @@ namespace PilotOS.Apps
                                 File.WriteAllText(newFilePath, "");
                             }
                         }
-                        catch { }
+                        catch(Exception ex) {
+
+                            ProcessManager.start(new Terminal { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700), args = "echo " + ex.Message  }, Name = "Terminal" });
+                        }
                     }
 
                     showPopup = false;
@@ -442,7 +445,7 @@ namespace PilotOS.Apps
                         }
                         else
                         {
-                            // TODO: Add file opening logic
+                            ProcessManager.start(new TextEditor { WindowData = new WindowData { WinPos = new Rectangle(100, 100, 700, 700) , args = Path + selectedItem.Name }, Name = selectedItem.Name });
                         }
                     }
 
