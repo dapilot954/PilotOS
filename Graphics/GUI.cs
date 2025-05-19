@@ -52,6 +52,13 @@ namespace PilotOS.Graphics
                 ProcessManager.ProcessList.Add(CurrentProcess);
             }
 
+            if (KeyboardManager.TryReadKey(out var keyEvent))
+            {
+                if (CurrentProcess != null)
+                {
+                    CurrentProcess.OnKeyPressed(keyEvent);
+                }
+            }
 
             if (MouseManager.MouseState == MouseState.Left)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cosmos.System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -17,6 +18,11 @@ namespace PilotOS.System
         {
 
         }
+        public virtual void OnKeyPressed(KeyEvent key)
+        {
+
+        }
+
         public string Name;
         public WindowData WindowData = new WindowData();
     }

@@ -1,4 +1,6 @@
-﻿using PilotOS.Graphics;
+﻿using Cosmos.HAL;
+using Cosmos.System;
+using PilotOS.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
