@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace PilotOS.Apps.TerminalAssets.Commands
 {
@@ -27,8 +28,11 @@ namespace PilotOS.Apps.TerminalAssets.Commands
                 }
                 if (File.Exists(path))
                 {
-                    string text = File.ReadAllText(path);
-                    terminal.print_perm(text);
+                    string[] lines = File.ReadAllLines(path);
+                    foreach (string line in lines)
+                    {
+                        terminal.print_perm(line);
+                    }
                 }
                 else
                 {
