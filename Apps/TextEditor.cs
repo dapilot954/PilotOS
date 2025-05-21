@@ -24,6 +24,11 @@ namespace PilotOS.Apps
         public DateTime LastChecked = DateTime.Now;
         public DateTime LastModified = DateTime.MinValue;
         public string LastContentHash;
+        public int ScrollOffset = 0; // vertical scroll position
+        int lineNumberWidth = 5;
+        int prefixWidth = 4;
+        int localPos;
+
 
         public override void Start()
         {
@@ -55,6 +60,7 @@ namespace PilotOS.Apps
 
         public override void Run()
         {
+            localPos = CursorX + prefixWidth;
             x = WindowData.WinPos.X;
             y = WindowData.WinPos.Y;
             SizeX = WindowData.WinPos.Width;
@@ -201,18 +207,89 @@ namespace PilotOS.Apps
 
         public void DrawFileEditor()
         {
-            int drawY = y + Window.TopSize;
-            for (int i = 0; i < Lines.Count && drawY + 16 < y + SizeY; i++)
+            int contentX = x + 40; // Leave space for line numbers (5 digits = 40px)
+            int contentY = y + Window.TopSize;
+            int charsPerLine = (SizeX - 44) / 8;
+            int maxVisibleLines = (SizeY - Window.TopSize) / 16;
+
+            List<(string line, int logicalIndex)> wrappedLines = new List<(string, int)>();
+
+            for (int i = 0; i < Lines.Count; i++)
             {
-                string lineToDraw = Lines[i];
-                if (i == CursorY && CursorVisible && CursorX <= lineToDraw.Length)
+                string prefix = $"{i + 1}) ";
+                string content = Lines[i];
+                int lineStart = 0;
+
+                // First wrapped line includes the prefix
+                string firstSegment = content.Substring(0, Math.Min(charsPerLine - prefix.Length, content.Length));
+                wrappedLines.Add((prefix + firstSegment, i));
+
+                lineStart += firstSegment.Length;
+
+                // Any additional wrapped lines
+                while (lineStart < content.Length)
                 {
-                    lineToDraw = lineToDraw.Insert(CursorX, "_");
+                    int remaining = content.Length - lineStart;
+                    int take = Math.Min(charsPerLine, remaining);
+                    string segment = content.Substring(lineStart, take);
+                    wrappedLines.Add(("".PadLeft(prefix.Length) + segment, i)); // align with line numbers
+                    lineStart += take;
                 }
-                GUI.MainCanvas.DrawString(lineToDraw, GUI.FontDefault, Color.White, x + 4, drawY);
+            }
+
+            int drawY = contentY;
+            int cursorDrawnY = -1;
+            int visibleLines = 0;
+
+            for (int i = ScrollOffset; i < wrappedLines.Count && visibleLines < maxVisibleLines; i++)
+            {
+                var (text, logicalLineIndex) = wrappedLines[i];
+
+                // Insert cursor (blinking underscore)
+                if (logicalLineIndex == CursorY && CursorVisible)
+                {
+                    int totalChars = 0;
+                    foreach (var (lineText, idx) in wrappedLines)
+                    {
+                        if (idx != CursorY) continue;
+
+                        // Exclude the prefix for calculating position
+                        string prefix = $"{CursorY + 1}) ";
+                        int prefixLength = prefix.Length;
+
+                        string pureLineText = lineText.Substring(prefixLength);
+                        if (CursorX <= totalChars + pureLineText.Length)
+                        {
+                            int localPos = CursorX - totalChars + prefixLength;
+
+                            if (localPos >= 0 && localPos <= lineText.Length)
+                                text = lineText.Insert(localPos, "_");
+
+                            break;
+                        }
+                        totalChars += pureLineText.Length;
+                    }
+                }
+
+
+
+                GUI.MainCanvas.DrawString(text, GUI.FontDefault, Color.White, contentX, drawY);
                 drawY += 16;
+                visibleLines++;
+            }
+
+            // Optional: draw scrollbar
+            int totalHeight = wrappedLines.Count * 16;
+            int scrollHeight = (SizeY - Window.TopSize);
+            if (totalHeight > scrollHeight)
+            {
+                int scrollbarHeight = Math.Max(10, (int)((scrollHeight * 1.0f) * (scrollHeight * 1.0f) / totalHeight));
+                int scrollbarY = y + Window.TopSize + (int)((ScrollOffset * 16.0f) * scrollHeight / totalHeight);
+
+                GUI.MainCanvas.DrawFilledRectangle(Color.Gray, x + SizeX - 4, scrollbarY, 2, scrollbarHeight);
             }
         }
+
         public void SaveToFile()
         {
             using (var stream = new StreamWriter(Path, false))
