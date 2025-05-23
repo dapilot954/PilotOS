@@ -33,7 +33,7 @@ namespace PilotOS.System.ConsoleCommands
                 }
                 else if (Format.aliases.Contains(words[0]) == true)
                 {
-                    Format.run();
+                    Format.run(words);
                 }
                 else if (Storageinfo.aliases.Contains(words[0]) == true)
                 {

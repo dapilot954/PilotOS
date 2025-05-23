@@ -13,19 +13,103 @@ namespace PilotOS.System.ConsoleCommands.Commands
     internal class Format
     {
         public static string[] aliases = { "format" };
-        public static void run()
+        public static void run(string[] words)
         {
-            Console.WriteLine("Formatting disk...");
+            var disk = Kernel.fs.Disks[0];
 
-            if (Kernel.fs.Disks[0].Partitions.Count > 0)
-                Kernel.fs.Disks[0].DeletePartition(0);
+            if (words.Length < 2)
+            {
+                Console.WriteLine("Usage: format <list|del <index>|mk <sizeMB>|fs <index>>");
+                return;
+            }
 
-            Kernel.fs.Disks[0].Clear();
-            Kernel.fs.Disks[0].CreatePartition(100); // safer fixed size
-            Kernel.fs.Disks[0].FormatPartition(0, "FAT32", true);
+            var subcommand = words[1].ToLower();
 
-            Cosmos.System.Power.Reboot();
+            switch (subcommand)
+            {
+                case "list":
+                    Console.WriteLine($"Disk 0: Size = {disk.Size} bytes, Partitions = {disk.Partitions.Count}");
+                    for (int i = 0; i < disk.Partitions.Count; i++)
+                    {
+                        Console.WriteLine($"  Partition {i}");
+                    }
+                    break;
+
+                case "del":
+                    if (words.Length < 3 || !int.TryParse(words[2], out int delIndex))
+                    {
+                        Console.WriteLine("Usage: format del <partitionIndex>");
+                        return;
+                    }
+
+                    if (delIndex < 0 || delIndex >= disk.Partitions.Count)
+                    {
+                        Console.WriteLine("Invalid partition index.");
+                        return;
+                    }
+
+                    try
+                    {
+                        disk.DeletePartition(delIndex);
+                        Console.WriteLine($"Deleted partition {delIndex}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error deleting partition: {ex.Message}");
+                    }
+                    break;
+
+                case "mk":
+                    if (words.Length < 3 || !uint.TryParse(words[2], out uint sizeMB))
+                    {
+                        Console.WriteLine("Usage: format mk <sizeMB>");
+                        return;
+                    }
+
+                    try
+                    {
+                        disk.CreatePartition((int)sizeMB);
+                        Console.WriteLine($"Created partition with size {sizeMB} MB");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating partition: {ex.Message}");
+                    }
+                    break;
+
+                case "fs":
+                    if (words.Length < 3 || !int.TryParse(words[2], out int fsIndex))
+                    {
+                        Console.WriteLine("Usage: format fs <partitionIndex>");
+                        return;
+                    }
+
+                    if (fsIndex < 0 || fsIndex >= disk.Partitions.Count)
+                    {
+                        Console.WriteLine("Invalid partition index.");
+                        return;
+                    }
+
+                    try
+                    {
+                        disk.FormatPartition(fsIndex, "FAT32", true);
+                        Console.WriteLine($"Formatted partition {fsIndex} to FAT32");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error formatting partition: {ex.Message}");
+                    }
+                    break;
+
+                default:
+                    Console.WriteLine($"Unknown subcommand: {subcommand}");
+                    break;
+            }
         }
+
+
+
+
     }
 
 
