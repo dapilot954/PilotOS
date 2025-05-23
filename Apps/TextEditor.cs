@@ -66,6 +66,29 @@ namespace PilotOS.Apps
             SizeX = WindowData.WinPos.Width;
             SizeY = WindowData.WinPos.Height;
 
+            int delta = MouseManager.ScrollDelta;
+
+            if (delta != 0)
+            {
+                if (delta > 0 && ScrollOffset > 0)
+                {
+                    ScrollOffset -= 1; // scroll up
+                }
+                else if (delta < 0)
+                {
+                    ScrollOffset += 1; // scroll down
+                }
+
+                // Clamp ScrollOffset
+                int contentHeight = GetWrappedLineCount() * 16;
+                int maxScroll = Math.Max(0, (contentHeight - (SizeY - Window.TopSize)) / 16);
+                ScrollOffset = Math.Clamp(ScrollOffset, 0, maxScroll);
+
+                // Reset delta after handling it
+                MouseManager.ResetScrollDelta();
+            }
+
+
             Window.DrawTop(this);
             GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, x, y + Window.TopSize, SizeX, SizeY - Window.TopSize);
 
@@ -104,6 +127,22 @@ namespace PilotOS.Apps
                 }
             }
         }
+
+        private int GetWrappedLineCount()
+        {
+            int charsPerLine = (SizeX - 44) / 8;
+            int count = 0;
+
+            for (int i = 0; i < Lines.Count; i++)
+            {
+                string content = Lines[i];
+                int lineCount = 1 + (int)Math.Ceiling((content.Length - Math.Max(0, charsPerLine - 4)) / (float)charsPerLine);
+                count += lineCount;
+            }
+
+            return count;
+        }
+
 
 
 
@@ -289,9 +328,11 @@ namespace PilotOS.Apps
                 GUI.MainCanvas.DrawFilledRectangle(Color.Gray, x + SizeX - 4, scrollbarY, 2, scrollbarHeight);
             }
         }
+        
 
         public void SaveToFile()
         {
+            
             using (var stream = new StreamWriter(Path, false))
             {
                 for (int i = 0; i < Lines.Count; i++)
