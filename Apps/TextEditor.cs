@@ -62,17 +62,20 @@ namespace PilotOS.Apps
             SizeX = WindowData.WinPos.Width;
             SizeY = WindowData.WinPos.Height;
 
-            int delta = MouseManager.ScrollDelta;
+            // Scroll responsiveness config
+            int linesPerScroll = 3;
 
+            int delta = MouseManager.ScrollDelta;
             if (delta != 0)
             {
-                ScrollOffset -= Math.Sign(delta);
-
-                int maxScroll = Math.Max(0, GetWrappedLines().Count - (SizeY - Window.TopSize) / 16);
+                ScrollOffset -= delta * linesPerScroll; // invert if needed depending on scroll direction
+                int contentHeight = GetWrappedLineCount() * 16;
+                int maxScroll = Math.Max(0, (contentHeight - (SizeY - Window.TopSize)) / 16);
                 ScrollOffset = Math.Clamp(ScrollOffset, 0, maxScroll);
 
                 MouseManager.ResetScrollDelta();
             }
+
 
             Window.DrawTop(this);
             GUI.MainCanvas.DrawFilledRectangle(GUI.colors.ColorMain, x, y + Window.TopSize, SizeX, SizeY - Window.TopSize);
@@ -187,16 +190,37 @@ namespace PilotOS.Apps
                 visibleLines++;
             }
 
+            // Draw scrollbar if needed
             int totalHeight = wrappedLines.Count * 16;
-            int scrollHeight = (SizeY - Window.TopSize);
-            if (totalHeight > scrollHeight)
+            int viewHeight = SizeY - Window.TopSize;
+            if (totalHeight > viewHeight)
             {
-                int scrollbarHeight = Math.Max(10, (scrollHeight * scrollHeight) / totalHeight);
-                int scrollbarY = y + Window.TopSize + (ScrollOffset * 16 * scrollHeight) / totalHeight;
+                float ratio = viewHeight / (float)totalHeight;
+                int scrollbarHeight = Math.Max(10, (int)(viewHeight * ratio));
+                int scrollableHeight = totalHeight - viewHeight;
+                int scrollbarY = y + Window.TopSize + (int)((ScrollOffset * 16f / scrollableHeight) * (viewHeight - scrollbarHeight));
 
+                scrollbarY = Math.Clamp(scrollbarY, y + Window.TopSize, y + SizeY - scrollbarHeight);
                 GUI.MainCanvas.DrawFilledRectangle(Color.Gray, x + SizeX - 4, scrollbarY, 2, scrollbarHeight);
             }
+
         }
+
+        private int GetWrappedLineCount()
+        {
+            int charsPerLine = (SizeX - 44) / 8;
+            int count = 0;
+
+            for (int i = 0; i < Lines.Count; i++)
+            {
+                string content = Lines[i];
+                int lineCount = 1 + (int)Math.Ceiling((content.Length - Math.Max(0, charsPerLine - 4)) / (float)charsPerLine);
+                count += lineCount;
+            }
+
+            return count;
+        }
+
 
         public void DrawNoFile()
         {
